@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define VERSION 	"0.7"
+#define VERSION 	"0.8"
 #define decoration  "[·]"
 #define help_banner "%s help\n -v or --version     \
 	print the installed version of tinyfetch\n -h or --help        \

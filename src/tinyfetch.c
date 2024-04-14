@@ -16,6 +16,7 @@
 #define pretext_kernver   "Kernel ver: "
 #define pretext_processor "CPU:        "
 #define pretext_shell	  "Shell:      "
+#define pretext_user	  "User:       "
 
 void pretext(char* string) {
 	printf(string);
@@ -29,12 +30,46 @@ void kernel_print(void) {
 	system("uname -r");
 }
 
+char* read_hostname(char* filename) {
+	char* buffer = NULL;
+	int string_size, read_size;
+	FILE* handler = fopen(filename, "r");
+
+	if (handler) {
+		fseek(handler, 0, SEEK_END);
+		string_size = ftell(handler);
+		rewind(handler);
+
+		buffer = (char*) malloc(sizeof(char) * (string_size + 1));
+		read_size = fread(buffer, sizeof(char), string_size, handler);
+
+		buffer[string_size] = '\0';
+
+		if (string_size != read_size) {
+			free(buffer);
+			buffer = NULL;
+		}
+
+		fclose(handler);
+	}
+
+	return buffer;
+}
+
 void print_all(void) {
 	char* shell = getenv("SHELL");
+	char* user 	= getenv("USER");
 	
 	kernel_print();
 	pretext(pretext_arch);
 	system("uname -m");
+	pretext(pretext_user);
+	printf("%s@", user);
+	char* hostname = read_hostname("/etc/hostname");
+	if (hostname) {
+		printf("%s", hostname);
+		free(hostname);
+	}
 	pretext(pretext_shell);
 	printf("%s\n", shell);
 	pretext(pretext_processor);

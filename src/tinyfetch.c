@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
 	}
 	
 	if (!strcmp(argv[1], "-v") || !strcmp(argv[1], "--version")) {
-		printf("%s v%s", argv[0], VERSION);
+		printf("%s v%s\n", argv[0], VERSION);
 		return 0;
 	} if (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help")) {
 		printf(help_banner, argv[0], argv[0]);

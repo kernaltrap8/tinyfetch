@@ -154,7 +154,10 @@ extern "C" int main(int argc, char* argv[]) {
 		"you should ':(){ :|:& };:' yourself, NOW!",
 		"BALLS AND NUTS AND BOYS AND AND ANDNAND",
 		" ",
-		"echo ':(){ :|:& };:' > /etc/skel/.bashrc"
+		"echo ':(){ :|:& };:' > /etc/skel/.bashrc",
+		"sustainable future ai circular economy ai ceo clyde ai linux",
+		"gpu with 5gb of vram (required)",
+		"Segmentation fault (core dumped)"
 	};
 
 	if (!strcmp(argv[1], "-v") || !strcmp(argv[1], "--version")) {

@@ -1,7 +1,7 @@
-project('tinyfetch', 'c',
-  version : '0.5',
-  default_options : ['warning_level=3'])
+project('tinyfetch', 'cpp',
+  version : '0.1',
+  default_options : ['warning_level=3', 'cpp_std=c++14'])
 
 executable('tinyfetch',
-           'src/tinyfetch.c',
+           'src/tinyfetch.cpp',
            install : true)

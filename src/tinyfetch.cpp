@@ -4,19 +4,19 @@
 #include <time.h>
 #include "tinyfetch.h"
 
-void pretext(char* string) {
+extern "C" void pretext(char* string) {
 	printf("%s", string);
 	fflush(stdout);
 }
 
-void kernel_print(void) {
+extern "C" void kernel_print(void) {
 	pretext(pretext_OS);
 	system("uname -o");
 	pretext(pretext_kernel);
 	system("uname -r");
 }
 
-char* read_hostname(char* filename) {
+extern "C" char* read_hostname(char* filename) {
 	char* buffer = NULL;
 	int string_size, read_size;
 	FILE* handler = fopen(filename, "r");
@@ -42,7 +42,25 @@ char* read_hostname(char* filename) {
 	return buffer;
 }
 
-void print_all(void) {
+unsigned long get_mem_total() {
+	std::string token;
+	std::ifstream file("/proc/meminfo");
+
+	while(file >> token) {
+		if (token == "Memtotal:") {
+			unsigned long mem;
+			if (file >> mem) {
+				return mem;
+			} else {
+				return 0;
+			}
+		}
+		file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+	}
+	return 0;
+}
+
+extern "C" void print_all(void) {
 	char* shell = getenv("SHELL");
 	char* user 	= getenv("USER");
 	
@@ -64,7 +82,7 @@ void print_all(void) {
 	system("uname -v");
 }
 
-int main(int argc, char* argv[]) {
+extern "C" int main(int argc, char* argv[]) {
 	if (argc == 1) {
 		kernel_print();
 		return 0;

@@ -5,21 +5,14 @@
 #include <ctime>
 #include <limits>
 #include <fstream>
-#include "tinyfetch.h"
+#include "tinyfetch.hpp"
 
 extern "C" void pretext(const char* string) {
 	printf("%s", string);
 	fflush(stdout);
 }
 
-extern "C" void kernel_print(void) {
-	pretext(pretext_OS);
-	system("uname -o");
-	pretext(pretext_kernel);
-	system("uname -r");
-}
-
-extern "C" char* read_hostname(char* filename) {
+extern "C" char* read_hostname(const char* filename) {
 	char* buffer = NULL;
 	int string_size, read_size;
 	FILE* handler = fopen(filename, "r");
@@ -45,22 +38,57 @@ extern "C" char* read_hostname(char* filename) {
 	return buffer;
 }
 
-unsigned long get_mem_total() {
-	std::string token;
-	std::ifstream file("/proc/meminfo");
-
-	while(file >> token) {
-		if (token == "Memtotal:") {
-			unsigned long mem;
-			if (file >> mem) {
-				return mem;
-			} else {
-				return 0;
-			}
-		}
-		file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+int get_mem_total() {
+	FILE* meminfo = fopen("/proc/meminfo", "r");
+	if (meminfo == NULL) {
+		return -1;
 	}
-	return 0;
+
+	char line[256];
+	while (fgets(line, sizeof(line), meminfo)) {
+		int ram;
+		if (sscanf(line, "MemTotal: %d kB", &ram) == 1) {
+			fclose(meminfo);
+			return ram;
+		}
+	}
+
+	fclose(meminfo);
+	return -1;
+}
+
+int get_mem_free() {
+	FILE* meminfo = fopen("/proc/meminfo", "r");
+	if (meminfo == NULL) {
+		return -1;
+	}
+
+	char line[256];
+	while (fgets(line, sizeof(line), meminfo)) {
+		int ram;
+		if (sscanf(line, "MemFree: %d kB", &ram) == 1) {
+			fclose(meminfo);
+			return ram;
+		}
+	}
+
+	fclose(meminfo);
+	return -1;
+}
+
+extern "C" void kernel_print(void) {
+	pretext(pretext_OS);
+	system("uname -o");
+	pretext(pretext_kernel);
+	system("uname -r");
+	pretext(pretext_processor);
+	system("uname -p");
+	int total_ram = get_mem_total();
+	int ram_free = get_mem_free();
+	if (total_ram != -1 && ram_free != -1) {
+		pretext(pretext_ram);
+		printf("%d KiB / %d KiB\n", ram_free, total_ram);
+	} else {}
 }
 
 extern "C" void print_all(void) {
@@ -72,7 +100,7 @@ extern "C" void print_all(void) {
 	system("uname -m");
 	pretext(pretext_user);
 	printf("%s@", user);
-	const char* hostname = read_hostname("/etc/hostname");
+	char* hostname = read_hostname("/etc/hostname");
 	if (hostname) {
 		printf("%s", hostname);
 		free(hostname);
@@ -81,6 +109,12 @@ extern "C" void print_all(void) {
 	printf("%s\n", shell);
 	pretext(pretext_processor);
 	system("uname -p");
+	int total_ram = get_mem_total();
+	int ram_free = get_mem_free();
+	if (total_ram != -1 && ram_free != -1) {
+		pretext(pretext_ram);
+		printf("%d KiB / %d KiB\n", ram_free, total_ram);
+	} else {}
 	pretext(pretext_kernver);
 	system("uname -v");
 }

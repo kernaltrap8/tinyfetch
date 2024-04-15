@@ -1,4 +1,4 @@
-#define VERSION 	"0.8"
+#define VERSION 	"1.2"
 #define decoration  "[·]"
 #define help_banner "tinyfetch help\n -v or --version     \
 	print the installed version of tinyfetch\n -h or --help        \

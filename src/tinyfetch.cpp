@@ -107,8 +107,6 @@ extern "C" void print_all(void) {
 	}
 	pretext(pretext_shell);
 	printf("%s\n", shell);
-	pretext(pretext_processor);
-	system("uname -p");
 	pretext(pretext_kernver);
 	system("uname -v");
 }

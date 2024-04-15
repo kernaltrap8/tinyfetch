@@ -109,12 +109,6 @@ extern "C" void print_all(void) {
 	printf("%s\n", shell);
 	pretext(pretext_processor);
 	system("uname -p");
-	int total_ram = get_mem_total();
-	int ram_free = get_mem_free();
-	if (total_ram != -1 && ram_free != -1) {
-		pretext(pretext_ram);
-		printf("%d KiB / %d KiB\n", ram_free, total_ram);
-	} else {}
 	pretext(pretext_kernver);
 	system("uname -v");
 }

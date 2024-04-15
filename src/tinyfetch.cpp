@@ -5,6 +5,7 @@
 #include <ctime>
 #include <limits>
 #include <fstream>
+#include <unistd.h>
 #include "tinyfetch.hpp"
 
 extern "C" void pretext(const char* string) {
@@ -36,6 +37,15 @@ extern "C" char* read_hostname(const char* filename) {
 	}
 
 	return buffer;
+}
+
+char* get_hostname_bsd() {
+	char hostname[256];
+	if (gethostname(hostname, sizeof(hostname)) == 0) {
+		return strdup(hostname);
+	} else {
+		return nullptr;
+	}
 }
 
 int get_mem_total() {
@@ -99,13 +109,13 @@ extern "C" void print_all(void) {
 	pretext(pretext_arch);
 	system("uname -m");
 	pretext(pretext_user);
-	printf("%s", user);
+	printf("%s@", user);
 	char* hostname = read_hostname("/etc/hostname");
 	if (!hostname) {
-		printf("\n");
+		printf("%s", get_hostname_bsd());
 		free(hostname);
 	} else {
-		printf("@%s", hostname);
+		printf("%s", hostname);
 		free(hostname);
 	}
 	pretext(pretext_shell);

@@ -112,7 +112,7 @@ extern "C" void print_all(void) {
 	printf("%s@", user);
 	char* hostname = read_hostname("/etc/hostname");
 	if (!hostname) {
-		printf("%s", get_hostname_bsd());
+		printf("%s\n", get_hostname_bsd());
 		free(hostname);
 	} else {
 		printf("%s", hostname);

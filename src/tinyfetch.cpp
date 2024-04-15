@@ -99,10 +99,13 @@ extern "C" void print_all(void) {
 	pretext(pretext_arch);
 	system("uname -m");
 	pretext(pretext_user);
-	printf("%s@", user);
+	printf("%s", user);
 	char* hostname = read_hostname("/etc/hostname");
-	if (hostname) {
-		printf("%s", hostname);
+	if (!hostname) {
+		printf("\n");
+		free(hostname);
+	} else {
+		printf("@%s", hostname);
 		free(hostname);
 	}
 	pretext(pretext_shell);

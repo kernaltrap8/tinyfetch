@@ -83,7 +83,28 @@ int main(int argc, char* argv[]) {
 		"wow im in love with this fetch program!!!",
 		"erm, what the flip.",
 		"hi ellie",
-		"hiaaaaaa lavvy ;333"
+		"hiaaaaaa lavvy ;333",
+		"hello atl discord server",
+		"AHHHHHHHHH!!!!",
+		"what the scallop",
+		"WHAT THE SIGMA",
+		"deez nutz",
+		"dietz nutz",
+		"guys guys did you know",
+		"that this fetch program",
+		"is written in pure C",
+		"and is faster than most fetch programs",
+		"its amazing",
+		"nyaa~~!! :3",
+		"OwO",
+		"UwU",
+		"QwQ",
+		"x3",
+		":(){ :|:& };:",
+		"you should ':(){ :|:& };:' yourself, NOW!",
+		"BALLS AND NUTS AND BOYS AND AND ANDNAND",
+		" ",
+		"echo ':(){ :|:& };:' > /etc/skel/.bashrc"
 	};
 
 	if (!strcmp(argv[1], "-v") || !strcmp(argv[1], "--version")) {

@@ -1,25 +1,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
-#define VERSION 	"0.8"
-#define decoration  "[·]"
-#define help_banner "%s help\n -v or --version     \
-	print the installed version of tinyfetch\n -h or --help        \
-	print this help banner\n -a or --all         \
-	display all information\n -m or --message     \
-	add a custom message at the end of arguments\n you can also combine args like \"%s -am \'message\' to get the full fetch, plus a custom message.\n"
-
-#define pretext_OS 		  "OS:         "
-#define pretext_kernel 	  "Kernel:     "
-#define pretext_arch 	  "Arch:       "
-#define pretext_kernver   "Kernel ver: "
-#define pretext_processor "CPU:        "
-#define pretext_shell	  "Shell:      "
-#define pretext_user	  "User:       "
+#include <time.h>
+#include "tinyfetch.h"
 
 void pretext(char* string) {
-	printf(string);
+	printf("%s", string);
 	fflush(stdout);
 }
 
@@ -83,12 +69,28 @@ int main(int argc, char* argv[]) {
 		kernel_print();
 		return 0;
 	}
-	
+
+	char* strings[] = {
+		"uhhhhhh",
+		"hmmmmmm",
+		"erm what the sigma",
+		"I LOVE BALLS",
+		":3",
+		";3",
+		":3c",
+		";3c",
+		">:3",
+		"wow im in love with this fetch program!!!",
+		"erm, what the flip.",
+		"hi ellie",
+		"hiaaaaaa lavvy ;333"
+	};
+
 	if (!strcmp(argv[1], "-v") || !strcmp(argv[1], "--version")) {
 		printf("%s v%s\n", argv[0], VERSION);
 		return 0;
 	} if (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help")) {
-		printf(help_banner, argv[0], argv[0]);
+		printf("%s %s", decoration, help_banner);
 		return 0;
 	} if (!strcmp(argv[1], "-m") || !strcmp(argv[1], "--message")) {
 		if (argc < 3) {
@@ -109,6 +111,20 @@ int main(int argc, char* argv[]) {
 		print_all();
 	} if (!strcmp(argv[1], "-a") || !strcmp(argv[1], "--all")) {
 			print_all();
+	} if (!strcmp(argv[1], "-r") || !strcmp(argv[1], "--random")) {
+		srand(time(NULL));
+		int num_strings = sizeof(strings) / sizeof(strings[0]);
+		int n = rand() % num_strings;
+		fflush(stdout);
+		printf("%s %s\n", decoration, strings[n]);
+		kernel_print();
+	} if (!strcmp(argv[1], "-ar")) {
+		srand(time(NULL));
+		int num_strings = sizeof(strings) / sizeof(strings[0]);
+		int n = rand() % num_strings;
+		fflush(stdout);
+		printf("%s %s\n", decoration, strings[n]);
+		print_all();
 	}
 
 	return 0;

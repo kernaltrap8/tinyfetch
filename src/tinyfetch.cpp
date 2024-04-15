@@ -1,10 +1,13 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
+#include <cstdlib>
+#include <cstdio>
+#include <string>
+#include <cstring>
+#include <ctime>
+#include <limits>
+#include <fstream>
 #include "tinyfetch.h"
 
-extern "C" void pretext(char* string) {
+extern "C" void pretext(const char* string) {
 	printf("%s", string);
 	fflush(stdout);
 }
@@ -69,7 +72,7 @@ extern "C" void print_all(void) {
 	system("uname -m");
 	pretext(pretext_user);
 	printf("%s@", user);
-	char* hostname = read_hostname("/etc/hostname");
+	const char* hostname = read_hostname("/etc/hostname");
 	if (hostname) {
 		printf("%s", hostname);
 		free(hostname);
@@ -88,7 +91,7 @@ extern "C" int main(int argc, char* argv[]) {
 		return 0;
 	}
 
-	char* strings[] = {
+	const char* strings[] = {
 		"uhhhhhh",
 		"hmmmmmm",
 		"erm what the sigma",

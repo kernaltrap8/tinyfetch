@@ -48,7 +48,7 @@ extern "C" char* read_hostname(const char* filename) {
 	return buffer; // return contents of the buffer
 }
 
-int file_parser(const char* file, const char* line_to_read) {
+extern "C" int file_parser(const char* file, const char* line_to_read) {
 	FILE* meminfo = fopen(file, "r"); // open the file to parse
 	if (meminfo == NULL) {
 		return -1; // return an error code if the file doesnt exist
@@ -67,7 +67,7 @@ int file_parser(const char* file, const char* line_to_read) {
 	return -1; // negative exit code. if we get here, an error occurred.
 }
 
-char* file_parser_char(const char* file, const char* line_to_read) {
+extern "C" char* file_parser_char(const char* file, const char* line_to_read) {
 	FILE* meminfo = fopen(file, "r"); // open the file to parse
 	if (meminfo == NULL) {
 		return NULL; // return an error code if the file doesnt exist
@@ -97,7 +97,7 @@ char* file_parser_char(const char* file, const char* line_to_read) {
 	hostname handling
 */
 
-char* get_hostname_bsd() {
+extern "C" char* get_hostname_bsd() {
 	char hostname[256];
 	if (gethostname(hostname, sizeof(hostname)) == 0) { // if the gethostname command works, return the value from it. otherise return a nullptr.
 		return strdup(hostname);
@@ -110,7 +110,7 @@ char* get_hostname_bsd() {
 	shell detection
 */
 
-char* get_parent_shell() {
+extern "C" char* get_parent_shell() {
 	pid_t ppid = getppid(); // get parent proc ID
 	char cmdline_path[64];
 	snprintf(cmdline_path, sizeof(cmdline_path), CMDLINE_PATH, ppid);
@@ -144,7 +144,7 @@ char* get_parent_shell() {
 	main printing functions
 */
 
-void rand_string() {
+extern "C" void rand_string() {
 	if (rand_enable == 1) {
 		srand(time(NULL));
 		int num_strings = sizeof(strings) / sizeof(strings[0]);
@@ -197,7 +197,7 @@ extern "C" void tinyfetch(void) {
 		pretext(pretext_ram);
 		printf("%d KiB / %d KiB\n", ram_free, total_ram);
 	} else {} // empty else statement, this will make nothing happen and not print ram avail/used.
-	
+
 	pretext(pretext_arch);
 	(void)system("uname -m"); // CPU arch
 	pretext(pretext_kernver);

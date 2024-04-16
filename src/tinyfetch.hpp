@@ -1,5 +1,6 @@
 #define VERSION 	"1.7"
 #define decoration  "[·]"
+#define CMDLINE_PATH "/proc/%d/cmdline"
 #define help_banner "tinyfetch help\n -v or --version     \
 	print the installed version of tinyfetch\n -h or --help        \
 	print this help banner\n -a or --all         \

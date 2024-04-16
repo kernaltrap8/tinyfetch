@@ -107,6 +107,40 @@ char* get_hostname_bsd() {
 }
 
 /*
+	shell detection
+*/
+
+char* get_parent_shell() {
+	pid_t ppid = getppid();
+	char cmdline_path[64];
+	snprintf(cmdline_path, sizeof(cmdline_path), CMDLINE_PATH, ppid);
+
+	FILE* cmdline_file = fopen(cmdline_path, "r");
+	if (cmdline_file == NULL) {
+		return nullptr;
+	}
+
+	char cmdline[256];
+	if (fgets(cmdline, sizeof(cmdline), cmdline_file) == NULL) {
+		fclose(cmdline_file);
+		return nullptr;
+	}
+
+	fclose(cmdline_file);
+
+	if (cmdline[0] == '-') {
+		memmove(cmdline, cmdline + 1, strlen(cmdline));
+	}
+
+	char* newline_pos = strchr(cmdline, '\n');
+	if (newline_pos != NULL) {
+		*newline_pos = '\0';
+	}
+
+	return strdup(cmdline);
+}
+
+/*
 	main printing functions
 */
 
@@ -134,7 +168,7 @@ extern "C" void kernel_print(void) {
 
 extern "C" void print_all(void) {
 	// get the shell and user env variables
-	char* shell = getenv("SHELL");
+	char* shell = get_parent_shell();
 	char* user 	= getenv("USER");
 	// print basic kernel fetch
 	kernel_print();
@@ -151,6 +185,10 @@ extern "C" void print_all(void) {
 		free(hostname); // free the memory alloc to the buff
 	}
 	pretext(pretext_shell);
+	if (shell == nullptr) {
+		free(shell);
+		shell = getenv("SHELL");
+	}
 	printf("%s\n", shell); // shell var taken from getenv()
 	pretext(pretext_kernver);
 	(void)system("uname -v"); // kernel version

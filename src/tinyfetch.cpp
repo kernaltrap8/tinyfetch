@@ -219,26 +219,33 @@ extern "C" int main(int argc, char* argv[]) {
 	/*
 		command line args
 	*/
-
-	if (!strcmp(argv[1], "-v") || !strcmp(argv[1], "--version")) {
-		printf("%s v%s\n", argv[0], VERSION);
-		return 0;
-	} if (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help")) {
-		printf("%s %s", decoration, help_banner);
-		return 0;
-	} if (!strcmp(argv[1], "-m") || !strcmp(argv[1], "--message")) {
-		if (argc < 3) {
-			printf("no message provided.\n");
-			return 1;
+	
+	if (argc > 1) {
+		if (!strcmp(argv[1], "-v") || !strcmp(argv[1], "--version")) {
+			printf("%s v%s\n", argv[0], VERSION);
+			return 0;
+		} if (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help")) {
+			printf("%s %s", decoration, help_banner);
+			return 0;
+		} if (!strcmp(argv[1], "-m") || !strcmp(argv[1], "--message")) {
+			if (argc < 3) {
+				printf("no message provided.\n");
+				return 1;
+			}
+			fflush(stdout); // we must flush the buffer before printing to prevent issues
+			printf("%s  %s\n", decoration, argv[2]);
+			tinyfetch();
+			return 0;
+		} if (!strcmp(argv[1], "-r") || !strcmp(argv[1], "--random")) {
+			// start of random number gen. we have two because if{} statememnts are isolated in C
+			rand_enable = 1;
+			tinyfetch();
+		} if (!strcmp(argv[1], "--color")) {
+			rand_enable = 1;
+			(void)system("tinyfetch -r | lolcat");
 		}
-		fflush(stdout); // we must flush the buffer before printing to prevent issues
-		printf("%s  %s\n", decoration, argv[2]);
-		tinyfetch();
-		return 0;
-	} if (!strcmp(argv[1], "-r") || !strcmp(argv[1], "--random")) {
-		// start of random number gen. we have two because if{} statememnts are isolated in C
-		rand_enable = 1;
-		tinyfetch();
+	} else {
+		printf("tinyfetch: Unknown command line argument.\n %s %s", decoration, help_banner);
 	}
 
 	// exit

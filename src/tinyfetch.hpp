@@ -9,8 +9,8 @@
 #define help_banner "tinyfetch help\n -v or --version     \
 	print the installed version of tinyfetch\n -h or --help        \
 	print this help banner\n -m or --message     \
-	add a custom message at the end of arguments\n -r or --random         add a random message before the fetch\n"
-
+	add a custom message at the end of arguments\n -r or --random         add a random message before the fetch\n --color \
+	    	add some color to your fetch! requires lolcat to be installed.\n"
 #define pretext_OS 		  "OS:         "
 #define pretext_kernel 	  "Kernel:     "
 #define pretext_arch 	  "Arch:       "

@@ -1,4 +1,4 @@
-#define VERSION 	"1.4"
+#define VERSION 	"1.7"
 #define decoration  "[·]"
 #define help_banner "tinyfetch help\n -v or --version     \
 	print the installed version of tinyfetch\n -h or --help        \
@@ -14,3 +14,4 @@
 #define pretext_shell	  "Shell:      "
 #define pretext_user	  "User:       "
 #define pretext_ram		  "RAM:        "
+#define pretext_distro    "Distro:     "

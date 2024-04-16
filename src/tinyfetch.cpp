@@ -67,6 +67,32 @@ int file_parser(const char* file, const char* line_to_read) {
 	return -1; // negative exit code. if we get here, an error occurred.
 }
 
+char* file_parser_char(const char* file, const char* line_to_read) {
+	FILE* meminfo = fopen(file, "r"); // open the file to parse
+	if (meminfo == NULL) {
+		return NULL; // return an error code if the file doesnt exist
+	}
+
+	char line[256]; // char buffer
+	while (fgets(line, sizeof(line), meminfo)) {
+		char* parsed_string = (char*)malloc(strlen(line) + 1); // allocate memory for the string
+		if (!parsed_string) {
+			fclose(meminfo);
+			return NULL;
+		}
+
+		if (sscanf(line, line_to_read, parsed_string) == 1) {
+			fclose(meminfo);
+			return parsed_string;
+		}
+		
+		free(parsed_string);
+	}
+
+	fclose(meminfo); // close the file
+	return NULL; // null exit code. if we get here, an error occurred.
+}
+
 /*
 	hostname handling
 */
@@ -89,6 +115,10 @@ extern "C" void kernel_print(void) {
 	// when a char string as passed to it, it will print it then flush the stdout buffer.
 	pretext(pretext_OS);
 	system("uname -o");
+	pretext(pretext_distro);
+	char* distro_name = file_parser_char("/etc/os-release", "PRETTY_NAME=\"%[^\"]\"");
+	char* distro_ver = file_parser_char("/etc/os-release", "VERSION_ID=\"%[^\"]\"%*c");
+	printf("%s %s\n", distro_name, distro_ver);
 	pretext(pretext_kernel);
 	system("uname -r");
 	pretext(pretext_processor);

@@ -114,15 +114,15 @@ extern "C" void kernel_print(void) {
 	// all pretext functions do the same thing (defined at the top of this file)
 	// when a char string as passed to it, it will print it then flush the stdout buffer.
 	pretext(pretext_OS);
-	system("uname -o");
+	(void)system("uname -o");
 	pretext(pretext_distro);
 	char* distro_name = file_parser_char("/etc/os-release", "PRETTY_NAME=\"%[^\"]\"");
 	char* distro_ver = file_parser_char("/etc/os-release", "VERSION_ID=\"%[^\"]\"%*c");
 	printf("%s %s\n", distro_name, distro_ver);
 	pretext(pretext_kernel);
-	system("uname -r");
+	(void)system("uname -r");
 	pretext(pretext_processor);
-	system("uname -p");
+	(void)system("uname -p");
 	// process memory used and total avail.
 	int total_ram = file_parser("/proc/meminfo", "MemTotal: %d kB");
 	int ram_free = file_parser("/proc/meminfo", "MemFree: %d kB");
@@ -139,7 +139,7 @@ extern "C" void print_all(void) {
 	// print basic kernel fetch
 	kernel_print();
 	pretext(pretext_arch);
-	system("uname -m"); // CPU arch
+	(void)system("uname -m"); // CPU arch
 	pretext(pretext_user);
 	printf("%s@", user); // username@, username is taken from char* user
 	char* hostname = read_hostname("/etc/hostname"); // read the hostname file
@@ -153,7 +153,7 @@ extern "C" void print_all(void) {
 	pretext(pretext_shell);
 	printf("%s\n", shell); // shell var taken from getenv()
 	pretext(pretext_kernver);
-	system("uname -v"); // kernel version
+	(void)system("uname -v"); // kernel version
 }
 
 /*

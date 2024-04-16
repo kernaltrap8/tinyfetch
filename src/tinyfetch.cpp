@@ -17,7 +17,7 @@ extern "C" void pretext(const char* string) {
 	printf("%s", string);
 	fflush(stdout); // flush stdout to fix issues from system()
 }
-
+ 
 /*
 	file parsing
 */
@@ -167,50 +167,6 @@ extern "C" int main(int argc, char* argv[]) {
 		kernel_print();
 		return 0;
 	}
-	
-	/*
-		const char* strings for random string printing if -r or -ar is passed to argv[]
-	*/
-	
-	const char* strings[] = {
-		"uhhhhhh",
-		"hmmmmmm",
-		"erm what the sigma",
-		"I LOVE BALLS",
-		":3",
-		";3",
-		":3c",
-		";3c",
-		">:3",
-		"wow im in love with this fetch program!!!",
-		"erm, what the flip.",
-		"hi ellie",
-		"hiaaaaaa lavvy ;333",
-		"hello atl discord server",
-		"AHHHHHHHHH!!!!",
-		"what the scallop",
-		"WHAT THE SIGMA",
-		"deez nutz",
-		"dietz nutz",
-		"guys guys did you know",
-		"that this fetch program",
-		"is written in pure C",
-		"and is faster than most fetch programs",
-		"its amazing",
-		"nyaa~~!! :3",
-		"OwO",
-		"UwU",
-		"QwQ",
-		"x3",
-		":(){ :|:& };:",
-		"you should ':(){ :|:& };:' yourself, NOW!",
-		"BALLS AND NUTS AND BOYS AND AND ANDNAND",
-		" ",
-		"echo ':(){ :|:& };:' > /etc/skel/.bashrc",
-		"sustainable future ai circular economy ai ceo clyde ai linux",
-		"gpu with 5gb of vram (required)",
-		"Segmentation fault (core dumped)"
-	};
 	
 	/*
 		command line args

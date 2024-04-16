@@ -144,19 +144,52 @@ char* get_parent_shell() {
 	main printing functions
 */
 
-extern "C" void kernel_print(void) {
+void rand_string() {
+	if (rand_enable == 1) {
+		srand(time(NULL));
+		int num_strings = sizeof(strings) / sizeof(strings[0]);
+		int n = rand() % num_strings;
+		fflush(stdout);
+		printf("%s %s\n", decoration, strings[n]);
+	} else {}
+}
+
+extern "C" void tinyfetch(void) {
 	// all pretext functions do the same thing (defined at the top of this file)
 	// when a char string as passed to it, it will print it then flush the stdout buffer.
+	printf("%s@", user); // username@, username is taken from char* user
+	char* hostname = read_hostname("/etc/hostname"); // read the hostname file
+	int total_length = strlen(user) + strlen(hostname);
+	if (!hostname) { // if the file doesnt exist, fallback to BSD-style hostname retrieval.
+		printf("%s\n", get_hostname_bsd());
+		free(hostname); // free the memory alloc to the buff
+	} else {
+		printf("%s", hostname);
+		for (int i = 0; i < total_length; i++) {
+			printf("-");
+		}
+		printf("\n");
+		free(hostname); // free the memory alloc to the buff
+	}
+
+	rand_string(); // this function is only ran if rand_enable is 1, which is enabled in the cmdline args handling.
 	pretext(pretext_OS);
-	(void)system("uname -o");
+	(void)system("uname -o"); // returns OS name
 	pretext(pretext_distro);
-	char* distro_name = file_parser_char("/etc/os-release", "PRETTY_NAME=\"%[^\"]\"");
+	char* distro_name = file_parser_char("/etc/os-release", "PRETTY_NAME=\"%[^\"]\""); // parsing at isolating the PRETTY_NAME and VERSON_ID
 	char* distro_ver = file_parser_char("/etc/os-release", "VERSION_ID=\"%[^\"]\"%*c");
 	printf("%s %s\n", distro_name, distro_ver);
 	pretext(pretext_kernel);
-	(void)system("uname -r");
+	(void)system("uname -r"); // gets kernel name
+	pretext(pretext_shell);
+	if (shell == nullptr) {
+		free(shell);
+		shell = getenv("SHELL");
+	}
+
+	printf("%s\n", shell); // shell var taken from getenv()
 	pretext(pretext_processor);
-	(void)system("uname -p");
+	(void)system("uname -p"); // gets processor name
 	// process memory used and total avail.
 	int total_ram = file_parser("/proc/meminfo", "MemTotal: %d kB");
 	int ram_free = file_parser("/proc/meminfo", "MemFree: %d kB");
@@ -164,32 +197,9 @@ extern "C" void kernel_print(void) {
 		pretext(pretext_ram);
 		printf("%d KiB / %d KiB\n", ram_free, total_ram);
 	} else {} // empty else statement, this will make nothing happen and not print ram avail/used.
-}
-
-extern "C" void print_all(void) {
-	// get the shell and user env variables
-	char* shell = get_parent_shell();
-	char* user 	= getenv("USER");
-	// print basic kernel fetch
-	kernel_print();
+	
 	pretext(pretext_arch);
 	(void)system("uname -m"); // CPU arch
-	pretext(pretext_user);
-	printf("%s@", user); // username@, username is taken from char* user
-	char* hostname = read_hostname("/etc/hostname"); // read the hostname file
-	if (!hostname) { // if the file doesnt exist, fallback to BSD-style hostname retrieval.
-		printf("%s\n", get_hostname_bsd());
-		free(hostname); // free the memory alloc to the buff
-	} else {
-		printf("%s", hostname);
-		free(hostname); // free the memory alloc to the buff
-	}
-	pretext(pretext_shell);
-	if (shell == nullptr) {
-		free(shell);
-		shell = getenv("SHELL");
-	}
-	printf("%s\n", shell); // shell var taken from getenv()
 	pretext(pretext_kernver);
 	(void)system("uname -v"); // kernel version
 }
@@ -202,7 +212,7 @@ extern "C" int main(int argc, char* argv[]) {
 	// if no args are passed, run the default printing function
 	
 	if (argc == 1) {
-		kernel_print();
+		tinyfetch();
 		return 0;
 	}
 	
@@ -223,34 +233,14 @@ extern "C" int main(int argc, char* argv[]) {
 		}
 		fflush(stdout); // we must flush the buffer before printing to prevent issues
 		printf("%s  %s\n", decoration, argv[2]);
-		kernel_print();
+		tinyfetch();
 		return 0;
-	} if (!strcmp(argv[1], "-am")) {
-		if (argc < 3) {
-			printf("no message provided.\n");
-			return 1;
-		}
-		fflush(stdout);
-		printf("%s %s\n", decoration, argv[2]);
-		print_all();
-	} if (!strcmp(argv[1], "-a") || !strcmp(argv[1], "--all")) {
-			print_all();
 	} if (!strcmp(argv[1], "-r") || !strcmp(argv[1], "--random")) {
 		// start of random number gen. we have two because if{} statememnts are isolated in C
-		srand(time(NULL));
-		int num_strings = sizeof(strings) / sizeof(strings[0]);
-		int n = rand() % num_strings;
-		fflush(stdout);
-		printf("%s %s\n", decoration, strings[n]);
-		kernel_print();
-	} if (!strcmp(argv[1], "-ar")) {
-		srand(time(NULL));
-		int num_strings = sizeof(strings) / sizeof(strings[0]);
-		int n = rand() % num_strings;
-		fflush(stdout);
-		printf("%s %s\n", decoration, strings[n]);
-		print_all();
+		rand_enable = 1;
+		tinyfetch();
 	}
+
 	// exit
 	return 0;
 }

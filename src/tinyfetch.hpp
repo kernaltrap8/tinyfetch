@@ -1,10 +1,14 @@
-#define VERSION 	"1.7"
+
+/*
+	strings for tinyfetch
+*/
+
+#define VERSION 	"2.1a"
 #define decoration  "[·]"
 #define CMDLINE_PATH "/proc/%d/cmdline"
 #define help_banner "tinyfetch help\n -v or --version     \
 	print the installed version of tinyfetch\n -h or --help        \
-	print this help banner\n -a or --all         \
-	display all information\n -m or --message     \
+	print this help banner\n -m or --message     \
 	add a custom message at the end of arguments\n -r or --random         add a random message before the fetch\n"
 
 #define pretext_OS 		  "OS:         "
@@ -13,9 +17,31 @@
 #define pretext_kernver   "Kernel ver: "
 #define pretext_processor "CPU:        "
 #define pretext_shell	  "Shell:      "
-#define pretext_user	  "User:       "
 #define pretext_ram		  "RAM:        "
 #define pretext_distro    "Distro:     "
+
+/*
+	function declaration
+*/
+
+extern "C" void pretext(const char* string);
+extern "C" char* read_hostname(const char* filename);
+int file_parser(const char* file, const char* line_to_read);
+char* file_parser_char(const char* file, const char* line_to_read);
+char* get_hostname_bsd();
+char* get_parent_shell();
+char* get_parent_shell();
+extern "C" void tinyfetch(void);
+extern "C" int main(int argc, char* argv[]);
+
+/*
+	environment variables
+*/
+
+char* user 	= getenv("USER");
+char* shell = get_parent_shell();
+int rand_enable;
+
 
 /*
 	const char* strings for random string printing if -r or -ar is passed to argv[]

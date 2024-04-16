@@ -111,33 +111,33 @@ char* get_hostname_bsd() {
 */
 
 char* get_parent_shell() {
-	pid_t ppid = getppid();
+	pid_t ppid = getppid(); // get parent proc ID
 	char cmdline_path[64];
 	snprintf(cmdline_path, sizeof(cmdline_path), CMDLINE_PATH, ppid);
 
-	FILE* cmdline_file = fopen(cmdline_path, "r");
+	FILE* cmdline_file = fopen(cmdline_path, "r"); // open /proc/%d/cmdline
 	if (cmdline_file == NULL) {
-		return nullptr;
+		return nullptr; // return NULL if cmdline_file doesnt exist
 	}
 
 	char cmdline[256];
-	if (fgets(cmdline, sizeof(cmdline), cmdline_file) == NULL) {
+	if (fgets(cmdline, sizeof(cmdline), cmdline_file) == NULL) { // if something bad happened, free memory and return nullptr
 		fclose(cmdline_file);
 		return nullptr;
 	}
 
-	fclose(cmdline_file);
+	fclose(cmdline_file); // close the file
 
-	if (cmdline[0] == '-') {
+	if (cmdline[0] == '-') { // NOTE: this fixes a bug that occurs sometimes either when using tmux or Konsole.
 		memmove(cmdline, cmdline + 1, strlen(cmdline));
 	}
 
-	char* newline_pos = strchr(cmdline, '\n');
+	char* newline_pos = strchr(cmdline, '\n'); // seek newline, if its there, remove it.
 	if (newline_pos != NULL) {
 		*newline_pos = '\0';
 	}
 
-	return strdup(cmdline);
+	return strdup(cmdline); // return the contents of cmdline
 }
 
 /*

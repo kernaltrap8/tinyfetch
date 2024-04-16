@@ -66,7 +66,7 @@ const char* strings[] = {
 	"exec dbus-launch --exit-with-session startplasma-wayland",
 	"meson init -l c src/tinyfetch.c --builddir build/",
 	"why did i put so many things in const char* strings[]",
-	"217 lines of C!!!",
+	"255 lines of code!!!",
 	"i can see you.",
 	"fish: Job 1, 'tinyfetch' terminated by signal SIGSEGV (Address boundary error)",
 	"tinyfetch: ioctl: Inappropriate ioctl for device.",

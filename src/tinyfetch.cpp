@@ -163,6 +163,10 @@ extern "C" void tinyfetch(void) {
 	
 	if (!hostname) { // if the file doesnt exist, fallback to BSD-style hostname retrieval.
 		printf("%s\n", get_hostname_bsd());
+		for (int i = 0; i < total_length; i++) {
+			printf("-");
+		}
+		printf("\n");
 		free(hostname); // free the memory alloc to the buff
 	} else {
 		printf("%s", hostname);

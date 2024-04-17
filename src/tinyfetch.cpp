@@ -179,6 +179,8 @@ extern "C" void tinyfetch(void) {
 	char* distro_name = file_parser_char("/etc/os-release", "PRETTY_NAME=\"%[^\"]\""); // parsing at isolating the PRETTY_NAME and VERSON_ID
 	char* distro_ver = file_parser_char("/etc/os-release", "VERSION_ID=\"%[^\"]\"%*c");
 	printf("%s %s\n", distro_name, distro_ver);
+	free(distro_name);
+	free(distro_ver);
 	pretext(pretext_kernel);
 	(void)system("uname -r"); // gets kernel name
 	pretext(pretext_shell);

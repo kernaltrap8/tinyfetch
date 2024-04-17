@@ -184,6 +184,7 @@ extern "C" void tinyfetch(void) {
 	pretext(pretext_kernel);
 	(void)system("uname -r"); // gets kernel name
 	pretext(pretext_shell);
+
 	if (shell == nullptr) {
 		free(shell);
 		shell = getenv("SHELL");
@@ -195,6 +196,7 @@ extern "C" void tinyfetch(void) {
 	// process memory used and total avail.
 	int total_ram = file_parser("/proc/meminfo", "MemTotal: %d kB");
 	int ram_free = file_parser("/proc/meminfo", "MemFree: %d kB");
+
 	if (total_ram != -1 && ram_free != -1) { // if we got the values correctly, print them
 		pretext(pretext_ram);
 		printf("%d KiB / %d KiB\n", ram_free, total_ram);
@@ -210,19 +212,18 @@ extern "C" void tinyfetch(void) {
 	main function
 */
 
-extern "C" int main(int argc, char* argv[]) {
-	// if no args are passed, run the default printing function
-	
-	if (argc == 1) {
-		tinyfetch();
-		return 0;
-	}
+extern "C" int main(int argc, char* argv[]) {	
 	
 	/*
 		command line args
 	*/
 	
-	//printf("%d", argc);
+	// if no args are passed, run the default printing function
+	
+	if (argc == 1) {
+		tinyfetch();
+		return 0;
+	}	
 
 	if (argc > 1) {
 		if (!strcmp(argv[1], "-v") || !strcmp(argv[1], "--version")) {
@@ -252,7 +253,6 @@ extern "C" int main(int argc, char* argv[]) {
 			return 1;
 		}
 	}
-
 
 	// exit
 	return 0;

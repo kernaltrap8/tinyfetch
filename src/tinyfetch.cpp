@@ -220,7 +220,9 @@ extern "C" int main(int argc, char* argv[]) {
 		command line args
 	*/
 	
-	if (argc > 1) {
+	//printf("%d", argc);
+
+	if (argc > 2) {
 		if (!strcmp(argv[1], "-v") || !strcmp(argv[1], "--version")) {
 			printf("%s v%s\n", argv[0], VERSION);
 			return 0;

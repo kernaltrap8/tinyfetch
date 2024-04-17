@@ -113,5 +113,6 @@ const char* strings[] = {
 	"[2/2] Linking target tinyfetch",
 	"You're so fat you make the black holes jealous!",
 	"d2h5IGRpZCB5b3UgZGVjb2RlIHRoaXMuIGkgaGlkIGl0IGhlcmUgZm9yIGEgcmVhc29uLiB3aHkuIHdoeSBtdXN0IHlvdSBsb29rIGF0IHRoZSBjb250ZW50cyBvZiB0aGlzLiBpdCBkb2VzbnQgbWFrZSBhbnkgbG9naWNhbCBzZW5zZS4gbWF5YmUgeW91J3JlIGJldHRlciBvZmYgbm90IGRlY29kaW5nIGFueXRoaW5nIGVsc2UgZnJvbSBub3cgb24uCg==",
-	"aHR0cDovL3dlYi5hcmNoaXZlLm9yZy93ZWIvMjAyNDA0MTYwNDI2MzIvaHR0cDovLzB4MC5zdC9YLWtkLnR4dA=="
+	"aHR0cDovL3dlYi5hcmNoaXZlLm9yZy93ZWIvMjAyNDA0MTYwNDI2MzIvaHR0cDovLzB4MC5zdC9YLWtkLnR4dA==",
+	"argc is a array, its index starts at 0"
 	};

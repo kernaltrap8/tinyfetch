@@ -242,7 +242,7 @@ extern "C" int main(int argc, char* argv[]) {
 			tinyfetch();
 		} if (!strcmp(argv[1], "--color")) {
 			rand_enable = 1;
-			(void)system("tinyfetch -r | lolcat");
+			(void)system("tinyfetch -r | lolcat"); // breaks shell detection
 		}
 	} else {
 		printf("tinyfetch: Unknown command line argument.\n %s %s", decoration, help_banner);

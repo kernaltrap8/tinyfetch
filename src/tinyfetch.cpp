@@ -160,6 +160,7 @@ extern "C" void tinyfetch(void) {
 	printf("%s@", user); // username@, username is taken from char* user
 	char* hostname = read_hostname("/etc/hostname"); // read the hostname file
 	int total_length = strlen(user) + strlen(hostname);
+	
 	if (!hostname) { // if the file doesnt exist, fallback to BSD-style hostname retrieval.
 		printf("%s\n", get_hostname_bsd());
 		free(hostname); // free the memory alloc to the buff
@@ -185,7 +186,7 @@ extern "C" void tinyfetch(void) {
 	(void)system("uname -r"); // gets kernel name
 	pretext(pretext_shell);
 
-	if (shell == nullptr) {
+	if (shell == nullptr) { // if get_parent_shell() fails, fallback to getenv
 		free(shell);
 		shell = getenv("SHELL");
 	}

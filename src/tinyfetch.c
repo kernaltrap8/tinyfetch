@@ -164,6 +164,7 @@ void tinyfetch(void) {
 	}
 
 	printf("%s\n", shell); // shell var taken from getenv()
+	free(shell);
 	pretext(pretext_processor);
 	(void)system("uname -p"); // gets processor name
 	// process memory used and total avail.

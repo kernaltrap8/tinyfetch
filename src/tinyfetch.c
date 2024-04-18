@@ -3,17 +3,14 @@
 // This is free software, and you are welcome to redistribute it
 // under certain conditions
 
-#include <cstdlib>
-#include <cstdio>
-#include <string>
-#include <cstring>
-#include <ctime>
-#include <limits>
-#include <fstream>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
 #include <unistd.h>
-#include "tinyfetch.hpp"
+#include "tinyfetch.h"
 
-extern "C" void pretext(const char* string) {
+void pretext(const char* string) {
 	printf("%s", string);
 	fflush(stdout); // flush stdout to fix issues from system()
 }
@@ -22,34 +19,7 @@ extern "C" void pretext(const char* string) {
 	file parsing
 */
 
-extern "C" char* read_hostname(const char* filename) {
-	char* buffer = NULL;
-	int string_size, read_size;
-	FILE* handler = fopen(filename, "r"); // open file passed to this function
-
-	if (handler) { // only run this statement if file exists
-		fseek(handler, 0, SEEK_END); // seek EoF
-		string_size = ftell(handler); // get string size
-		rewind(handler);
-
-		buffer = (char*) malloc(sizeof(char) * (string_size + 1)); // allocate memory for buffer for the exact size of the string we are printing
-		read_size = fread(buffer, sizeof(char), string_size, handler); // get size of string to print
-
-		buffer[string_size] = '\0';
-
-		if (string_size != read_size) { // if we didnt get the size correctly, free the memory allocated and set the buffer to NULL
-			free(buffer);
-			buffer = NULL;
-		}
-
-		fclose(handler); // close the buffer
-		return buffer; // return buffer contents
-	}
-
-	return NULL;
-}
-
-extern "C" int file_parser(const char* file, const char* line_to_read) {
+int file_parser(const char* file, const char* line_to_read) {
 	FILE* meminfo = fopen(file, "r"); // open the file to parse
 	if (meminfo == NULL) {
 		return -1; // return an error code if the file doesnt exist
@@ -68,7 +38,7 @@ extern "C" int file_parser(const char* file, const char* line_to_read) {
 	return -1; // negative exit code. if we get here, an error occurred.
 }
 
-extern "C" char* file_parser_char(const char* file, const char* line_to_read) {
+char* file_parser_char(const char* file, const char* line_to_read) {
 	FILE* meminfo = fopen(file, "r"); // open the file to parse
 	if (meminfo == NULL) {
 		return NULL; // return an error code if the file doesnt exist
@@ -98,12 +68,12 @@ extern "C" char* file_parser_char(const char* file, const char* line_to_read) {
 	hostname handling
 */
 
-char* get_hostname_bsd() {
+char* get_hostname() {
 	char hostname[256];
 	if (gethostname(hostname, sizeof(hostname)) == 0) { // if the gethostname command works, return the value from it. otherise return a nullptr.
 		return strdup(hostname);
 	} else {
-		return nullptr;
+		return NULL;
 	}
 }
 
@@ -111,20 +81,20 @@ char* get_hostname_bsd() {
 	shell detection
 */
 
-extern "C" char* get_parent_shell() {
+char* get_parent_shell() {
 	pid_t ppid = getppid(); // get parent proc ID
 	char cmdline_path[64];
 	snprintf(cmdline_path, sizeof(cmdline_path), CMDLINE_PATH, ppid);
 
 	FILE* cmdline_file = fopen(cmdline_path, "r"); // open /proc/%d/cmdline
 	if (cmdline_file == NULL) {
-		return nullptr; // return NULL if cmdline_file doesnt exist
+		return NULL; // return NULL if cmdline_file doesnt exist
 	}
 
 	char cmdline[256];
 	if (fgets(cmdline, sizeof(cmdline), cmdline_file) == NULL) { // if something bad happened, free memory and return nullptr
 		fclose(cmdline_file);
-		return nullptr;
+		return NULL;
 	}
 
 	fclose(cmdline_file); // close the file
@@ -145,7 +115,7 @@ extern "C" char* get_parent_shell() {
 	main printing functions
 */
 
-extern "C" void rand_string() {
+void rand_string() {
 	if (rand_enable == 1) {
 		srand(time(NULL));
 		int num_strings = sizeof(strings) / sizeof(strings[0]);
@@ -155,22 +125,19 @@ extern "C" void rand_string() {
 	} else {}
 }
 
-extern "C" void tinyfetch(void) {
+void tinyfetch(void) {
 	// all pretext functions do the same thing (defined at the top of this file)
 	// when a char string as passed to it, it will print it then flush the stdout buffer.
+	char* user 	= getenv("USER");
+	char* shell = get_parent_shell();
 	printf("%s@", user); // username@, username is taken from char* user
-	char* hostname = file_parser_char("/etc/hostname", "%s"); // read the hostname file
+	char* hostname = get_hostname(); // read the hostname file
 	int total_length = strlen(user) + strlen(hostname);
 	
-	if (hostname == nullptr) { // if the file doesnt exist, fallback to BSD-style hostname retrieval.
-		printf("%s\n", get_hostname_bsd());
-		for (int i = 0; i < total_length; i++) {
-			printf("-");
-		}
-		printf("\n");
-		free(hostname); // free the memory alloc to the buff
+	if (hostname == NULL) { // this shouldnt fail but if it does, we're in trouble.
+		printf("Could not get hostname from get_hostname()\n");
 	} else {
-		printf("%s", hostname);
+		printf("%s\n", hostname);
 		for (int i = 0; i < total_length; i++) {
 			printf("-");
 		}
@@ -191,7 +158,7 @@ extern "C" void tinyfetch(void) {
 	(void)system("uname -r"); // gets kernel name
 	pretext(pretext_shell);
 
-	if (shell == nullptr) { // if get_parent_shell() fails, fallback to getenv
+	if (shell == NULL) { // if get_parent_shell() fails, fallback to getenv
 		free(shell);
 		shell = getenv("SHELL");
 	}
@@ -218,7 +185,7 @@ extern "C" void tinyfetch(void) {
 	main function
 */
 
-extern "C" int main(int argc, char* argv[]) {	
+int main(int argc, char* argv[]) {	
 	
 	/*
 		command line args

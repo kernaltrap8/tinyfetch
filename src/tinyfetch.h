@@ -24,23 +24,19 @@
 	function declaration
 */
 
-extern "C" void pretext(const char* string);
-extern "C" char* read_hostname(const char* filename);
-extern "C" int file_parser(const char* file, const char* line_to_read);
-extern "C" char* file_parser_char(const char* file, const char* line_to_read);
+void pretext(const char* string);
+char* read_hostname(const char* filename);
+int file_parser(const char* file, const char* line_to_read);
+char* file_parser_char(const char* file, const char* line_to_read);
 char* get_hostname_bsd();
-extern "C" char* get_parent_shell();
-extern "C" void tinyfetch(void);
-extern "C" int main(int argc, char* argv[]);
+char* get_parent_shell();
+void tinyfetch(void);
+int main(int argc, char* argv[]);
 
 /*
 	environment variables
 */
-
-char* user 	= getenv("USER");
-char* shell = get_parent_shell();
 int rand_enable;
-
 
 /*
 	const char* strings for random string printing if -r or -ar is passed to argv[]

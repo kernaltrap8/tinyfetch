@@ -43,9 +43,10 @@ extern "C" char* read_hostname(const char* filename) {
 		}
 
 		fclose(handler); // close the buffer
+		return buffer; // return buffer contents
 	}
 
-	return buffer; // return contents of the buffer
+	return NULL;
 }
 
 extern "C" int file_parser(const char* file, const char* line_to_read) {
@@ -97,7 +98,7 @@ extern "C" char* file_parser_char(const char* file, const char* line_to_read) {
 	hostname handling
 */
 
-extern "C" char* get_hostname_bsd() {
+char* get_hostname_bsd() {
 	char hostname[256];
 	if (gethostname(hostname, sizeof(hostname)) == 0) { // if the gethostname command works, return the value from it. otherise return a nullptr.
 		return strdup(hostname);
@@ -158,10 +159,10 @@ extern "C" void tinyfetch(void) {
 	// all pretext functions do the same thing (defined at the top of this file)
 	// when a char string as passed to it, it will print it then flush the stdout buffer.
 	printf("%s@", user); // username@, username is taken from char* user
-	char* hostname = read_hostname("/etc/hostname"); // read the hostname file
+	char* hostname = file_parser_char("/etc/hostname", "%s"); // read the hostname file
 	int total_length = strlen(user) + strlen(hostname);
 	
-	if (!hostname) { // if the file doesnt exist, fallback to BSD-style hostname retrieval.
+	if (hostname == nullptr) { // if the file doesnt exist, fallback to BSD-style hostname retrieval.
 		printf("%s\n", get_hostname_bsd());
 		for (int i = 0; i < total_length; i++) {
 			printf("-");

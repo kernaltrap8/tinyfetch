@@ -11,11 +11,6 @@
 #include <sys/utsname.h>
 #include "tinyfetch.h"
 
-void pretext(const char* string) {
-	printf("%s", string);
-	fflush(stdout); // flush stdout to fix issues from system()
-}
- 
 /*
 	file parsing
 */
@@ -69,7 +64,7 @@ char* file_parser_char(const char* file, const char* line_to_read) {
 	hostname handling
 */
 
-char* get_hostname() {
+char* get_hostname(void) {
 	char hostname[256];
 	if (gethostname(hostname, sizeof(hostname)) == 0) { // if the gethostname command works, return the value from it. otherise return a nullptr.
 		return strdup(hostname);
@@ -82,7 +77,7 @@ char* get_hostname() {
 	shell detection
 */
 
-char* get_parent_shell() {
+char* get_parent_shell(void) {
 	pid_t ppid = getppid(); // get parent proc ID
 	char cmdline_path[64];
 	snprintf(cmdline_path, sizeof(cmdline_path), CMDLINE_PATH, ppid);
@@ -99,15 +94,20 @@ char* get_parent_shell() {
 	}
 
 	fclose(cmdline_file); // close the file
-
+	
 	if (cmdline[0] == '-') { // NOTE: this fixes a bug that occurs sometimes either when using tmux or Konsole.
 		memmove(cmdline, cmdline + 1, strlen(cmdline));
 	}
-
+	
 	char* newline_pos = strchr(cmdline, '\n'); // seek newline, if its there, remove it.
 	if (newline_pos != NULL) {
 		*newline_pos = '\0';
 	}
+
+	if (!strncmp(cmdline, "/bin/", 5)) {
+		return strdup(cmdline + 5); // return string with /bin/ removed, if it exists in the first place.
+	}
+
 
 	return strdup(cmdline); // return the contents of cmdline
 }
@@ -116,7 +116,7 @@ char* get_parent_shell() {
 	main printing functions
 */
 
-void rand_string() {
+void rand_string(void) {
 	if (rand_enable == 1) {
 		srand(time(NULL));
 		int num_strings = sizeof(strings) / sizeof(strings[0]);
@@ -124,6 +124,11 @@ void rand_string() {
 		fflush(stdout);
 		printf("%s %s\n", decoration, strings[n]);
 	} else {}
+}
+
+void pretext(const char* string) {
+	printf("%s", string);
+	fflush(stdout); // flush stdout, just in case.
 }
 
 void fetchinfo(char* structname) {
@@ -164,7 +169,7 @@ void tinyfetch(void) {
 	free(distro_name);
 	free(distro_ver);
 	pretext(pretext_kernel);
-	fetchinfo(tiny.release);
+	fetchinfo(tiny.release); // gets kernel name
 	pretext(pretext_shell);
 
 	if (shell == NULL) { // if get_parent_shell() fails, fallback to getenv
@@ -231,7 +236,13 @@ int main(int argc, char* argv[]) {
 			tinyfetch();
 		} else if (!strcmp(argv[1], "--color")) {
 			rand_enable = 1;
-			(void)system("tinyfetch -r | lolcat"); // breaks shell detection
+			if (access("/usr/bin/lolcat", F_OK) == -1) {
+				perror("access");
+				printf("lolcat is not installed! cannot print using colors.\n");
+				return 1;
+			} else {
+				(void)system("tinyfetch -r | lolcat"); // breaks shell detectio	
+			}
 		} else {
 			printf("tinyfetch: Unknown command line argument.\n %s %s", decoration, help_banner);
 			return 1;

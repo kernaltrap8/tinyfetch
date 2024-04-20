@@ -24,18 +24,19 @@
 	function declaration
 */
 
-void pretext(const char* string);
-char* read_hostname(const char* filename);
 int file_parser(const char* file, const char* line_to_read);
 char* file_parser_char(const char* file, const char* line_to_read);
-char* get_hostname_bsd();
-char* get_parent_shell();
+char* get_hostname(void);
+char* get_parent_shell(void);
+void rand_string(void);
+void pretext(const char* string);
+void fetchinfo(char* structname);
 void tinyfetch(void);
-int main(int argc, char* argv[]);
 
 /*
 	environment variables
 */
+
 int rand_enable;
 struct utsname tiny;
 

@@ -37,6 +37,7 @@ int main(int argc, char* argv[]);
 	environment variables
 */
 int rand_enable;
+struct utsname tiny;
 
 /*
 	const char* strings for random string printing if -r or -ar is passed to argv[]

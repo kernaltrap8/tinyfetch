@@ -8,6 +8,7 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include <sys/utsname.h>
 #include "tinyfetch.h"
 
 void pretext(const char* string) {
@@ -125,29 +126,37 @@ void rand_string() {
 	} else {}
 }
 
+void fetchinfo(char* structname) {
+	printf("%s\n", structname);
+}
+
 void tinyfetch(void) {
 	// all pretext functions do the same thing (defined at the top of this file)
 	// when a char string as passed to it, it will print it then flush the stdout buffer.
+	if (uname(&tiny) == -1) {
+		perror("uname");
+	}
+	
 	char* user 	= getenv("USER");
 	char* shell = get_parent_shell();
 	printf("%s@", user); // username@, username is taken from char* user
-	char* hostname = get_hostname(); // read the hostname file
-	int total_length = strlen(user) + strlen(hostname);
 	
-	if (hostname == NULL) { // this shouldnt fail but if it does, we're in trouble.
-		printf("Could not get hostname from get_hostname()\n");
-	} else {
-		printf("%s\n", hostname);
-		for (int i = 0; i < total_length; i++) {
-			printf("-");
-		}
-		printf("\n");
-		free(hostname); // free the memory alloc to the buff
+	int total_length = strlen(user) + strlen(tiny.nodename) + 1; // calculate the chars needed for the decoration under user@host
+	// taken from utsname struct
+	printf("%s\n", tiny.nodename);
+	for (int i = 0; i < total_length; i++) {
+		printf("-");
 	}
-
+	printf("\n");
+	
 	rand_string(); // this function is only ran if rand_enable is 1, which is enabled in the cmdline args handling.
 	pretext(pretext_OS);
-	(void)system("uname -o"); // returns OS name
+	// tiny.sysname doesnt return what uname -o would, so here we check if it == Linux, and if it does, print GNU/ before tiny.sysname
+	if (!strcmp(tiny.sysname, "Linux")) {
+		printf("GNU/");
+	}
+	
+	fetchinfo(tiny.sysname);
 	pretext(pretext_distro);
 	char* distro_name = file_parser_char("/etc/os-release", "PRETTY_NAME=\"%[^\"]\""); // parsing at isolating the PRETTY_NAME and VERSON_ID
 	char* distro_ver = file_parser_char("/etc/os-release", "VERSION_ID=\"%[^\"]\"%*c");
@@ -155,7 +164,7 @@ void tinyfetch(void) {
 	free(distro_name);
 	free(distro_ver);
 	pretext(pretext_kernel);
-	(void)system("uname -r"); // gets kernel name
+	fetchinfo(tiny.release);
 	pretext(pretext_shell);
 
 	if (shell == NULL) { // if get_parent_shell() fails, fallback to getenv
@@ -166,7 +175,8 @@ void tinyfetch(void) {
 	printf("%s\n", shell); // shell var taken from getenv()
 	free(shell);
 	pretext(pretext_processor);
-	(void)system("uname -p"); // gets processor name
+	char* cpu = file_parser_char("/proc/cpuinfo", "model name      : %[^\n]");
+	printf("%s\n", cpu);
 	// process memory used and total avail.
 	int total_ram = file_parser("/proc/meminfo", "MemTotal: %d kB");
 	int ram_free = file_parser("/proc/meminfo", "MemFree: %d kB");
@@ -177,9 +187,9 @@ void tinyfetch(void) {
 	} else {} // empty else statement, this will make nothing happen and not print ram avail/used.
 
 	pretext(pretext_arch);
-	(void)system("uname -m"); // CPU arch
-	pretext(pretext_kernver);
-	(void)system("uname -v"); // kernel version
+	fetchinfo(tiny.machine); // CPU arch
+	pretext(pretext_kernver); // kernel version
+	fetchinfo(tiny.version);
 }
 
 /*

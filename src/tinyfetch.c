@@ -171,6 +171,9 @@ void tinyfetch(void) {
 	free(distro_ver);
 	pretext(pretext_kernel);
 	fetchinfo(tiny.release); // gets kernel name
+	pretext(pretext_arch);
+	printf(tiny.machine); // CPU arch
+	printf("\n");
 	pretext(pretext_shell);
 
 	if (shell == NULL) { // if get_parent_shell() fails, fallback to getenv
@@ -196,12 +199,11 @@ void tinyfetch(void) {
 	int ram_free = file_parser("/proc/meminfo", "MemFree: %d kB");
 
 	if (total_ram != -1 && ram_free != -1) { // if we got the values correctly, print them
+		int ram_used = total_ram - ram_free;
 		pretext(pretext_ram);
-		printf("%d KiB / %d KiB\n", ram_free, total_ram);
+		printf("%d KiB / %d KiB (%d KiB free)\n", ram_used, total_ram, ram_free);
 	} else {} // empty else statement, this will make nothing happen and not print ram avail/used.
 
-	pretext(pretext_arch);
-	fetchinfo(tiny.machine); // CPU arch
 	pretext(pretext_kernver); // kernel version
 	fetchinfo(tiny.version);
 }

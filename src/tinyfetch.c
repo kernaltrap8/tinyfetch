@@ -144,6 +144,7 @@ void tinyfetch(void) {
 	
 	char* user 	= getenv("USER");
 	char* shell = get_parent_shell();
+	char* wm    = getenv("XDG_CURRENT_DESKTOP");
 	printf("%s@", user); // username@, username is taken from char* user
 	
 	int total_length = strlen(user) + strlen(tiny.nodename) + 1; // calculate the chars needed for the decoration under user@host
@@ -179,6 +180,14 @@ void tinyfetch(void) {
 
 	printf("%s\n", shell); // shell var taken from getenv()
 	free(shell);
+
+	if (wm == NULL) {
+		;
+	} else {
+		pretext(pretext_wm);
+		printf("%s\n", wm);
+	}
+
 	pretext(pretext_processor);
 	char* cpu = file_parser_char("/proc/cpuinfo", "model name      : %[^\n]");
 	printf("%s\n", cpu);

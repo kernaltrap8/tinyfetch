@@ -9,6 +9,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <sys/utsname.h>
+#include <pci/pci.h>
 #include "tinyfetch.h"
 
 /*
@@ -113,6 +114,39 @@ char* get_parent_shell(void) {
 }
 
 /*
+	GPU detection
+*/
+
+char* get_gpu_by_name(void) {
+    struct pci_access *pacc;
+    struct pci_dev *dev;
+    char name[1024];
+    char* gpu_name = NULL;
+
+    // init libpci
+    pacc = pci_alloc();
+    pci_init(pacc);
+
+    // scan for pci devices
+    pci_scan_bus(pacc);
+
+    // iterate over devices
+    for (dev = pacc->devices; dev; dev = dev->next) {
+        // get the device name using pci_lookup_name()
+        pci_lookup_name(pacc, name, sizeof(name), PCI_LOOKUP_DEVICE, dev->vendor_id, dev->device_id);
+
+        // check if the device is a GPU
+        if (strstr(name, "Graphics") || strstr(name, "VGA") || strstr(name, "GPU")) {
+            gpu_name = strdup(name);
+            break;
+        }
+    }
+
+    pci_cleanup(pacc);
+    return gpu_name;
+}
+ 
+/*
 	main printing functions
 */
 
@@ -173,6 +207,10 @@ void tinyfetch(void) {
 	fetchinfo(tiny.release); // gets kernel name
 	pretext(pretext_arch);
 	printf(tiny.machine); // CPU arch
+	printf("\n");
+	char* gpu_name = get_gpu_by_name();
+	pretext(pretext_gpu);
+	printf("%s", gpu_name);
 	printf("\n");
 	pretext(pretext_shell);
 
@@ -241,8 +279,7 @@ int main(int argc, char* argv[]) {
 			printf("%s  %s\n", decoration, argv[2]);
 			tinyfetch();
 			return 0;
-		} else if (!strcmp(argv[1], "-r") || !strcmp(argv[1], "--random")) {
-			// start of random number gen. we have two because if{} statememnts are isolated in C
+		} else if (!strcmp(argv[1], "-r") || !strcmp(argv[1], "--random") || (!strcmp(argv[1], "-r") && !strcmp(argv[2], "--color"))) {
 			rand_enable = 1;
 			tinyfetch();
 		} else if (!strcmp(argv[1], "--color")) {
@@ -252,7 +289,12 @@ int main(int argc, char* argv[]) {
 				printf("lolcat is not installed! cannot print using colors.\n");
 				return 1;
 			} else {
-				(void)system("tinyfetch -r | lolcat"); // breaks shell detectio	
+				char buffer[256];
+				strncpy(buffer, argv[0], sizeof(buffer) - 1);
+				buffer[sizeof(buffer) - 1] = '\0';
+				strcat(buffer, " | lolcat");
+				printf("%s", buffer);
+				(void)system(buffer); // breaks shell detectio	
 			}
 		} else {
 			printf("tinyfetch: Unknown command line argument.\n %s %s", decoration, help_banner);

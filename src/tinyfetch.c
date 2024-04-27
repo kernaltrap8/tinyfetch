@@ -208,10 +208,6 @@ void tinyfetch(void) {
 	pretext(pretext_arch);
 	printf(tiny.machine); // CPU arch
 	printf("\n");
-	char* gpu_name = get_gpu_by_name();
-	pretext(pretext_gpu);
-	printf("%s", gpu_name);
-	printf("\n");
 	pretext(pretext_shell);
 
 	if (shell == NULL) { // if get_parent_shell() fails, fallback to getenv
@@ -232,6 +228,15 @@ void tinyfetch(void) {
 	pretext(pretext_processor);
 	char* cpu = file_parser_char("/proc/cpuinfo", "model name      : %[^\n]");
 	printf("%s\n", cpu);
+	char* gpu_name = get_gpu_by_name();
+	
+	if (gpu_name == NULL) {
+		;
+	} else {
+		pretext(pretext_gpu);
+		printf("%s", gpu_name);
+		printf("\n");
+	}
 	// process memory used and total avail.
 	int total_ram = file_parser("/proc/meminfo", "MemTotal: %d kB");
 	int ram_free = file_parser("/proc/meminfo", "MemFree: %d kB");

@@ -9,7 +9,6 @@
 #include <time.h>
 #include <unistd.h>
 #include <sys/utsname.h>
-#include <pci/pci.h>
 #include "tinyfetch.h"
 
 /*
@@ -113,38 +112,6 @@ char* get_parent_shell(void) {
 	return strdup(cmdline); // return the contents of cmdline
 }
 
-/*
-	GPU detection
-*/
-
-char* get_gpu_by_name(void) {
-    struct pci_access *pacc;
-    struct pci_dev *dev;
-    char name[1024];
-    char* gpu_name = NULL;
-
-    // init libpci
-    pacc = pci_alloc();
-    pci_init(pacc);
-
-    // scan for pci devices
-    pci_scan_bus(pacc);
-
-    // iterate over devices
-    for (dev = pacc->devices; dev; dev = dev->next) {
-        // get the device name using pci_lookup_name()
-        pci_lookup_name(pacc, name, sizeof(name), PCI_LOOKUP_DEVICE, dev->vendor_id, dev->device_id);
-
-        // check if the device is a GPU
-        if (strstr(name, "Graphics") || strstr(name, "VGA") || strstr(name, "GPU")) {
-            gpu_name = strdup(name);
-            break;
-        }
-    }
-
-    pci_cleanup(pacc);
-    return gpu_name;
-}
  
 /*
 	main printing functions
@@ -228,15 +195,7 @@ void tinyfetch(void) {
 	pretext(pretext_processor);
 	char* cpu = file_parser_char("/proc/cpuinfo", "model name      : %[^\n]");
 	printf("%s\n", cpu);
-	char* gpu_name = get_gpu_by_name();
-	
-	if (gpu_name == NULL) {
-		;
-	} else {
-		pretext(pretext_gpu);
-		printf("%s", gpu_name);
-		printf("\n");
-	}
+
 	// process memory used and total avail.
 	int total_ram = file_parser("/proc/meminfo", "MemTotal: %d kB");
 	int ram_free = file_parser("/proc/meminfo", "MemFree: %d kB");

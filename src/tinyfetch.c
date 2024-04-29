@@ -216,9 +216,10 @@ void tinyfetch(void) {
 	long int uptime = get_uptime();
 	if (uptime == -1) {
 		;
+	} else {
+		pretext(pretext_uptime);
+		format_uptime(uptime);
 	}
-	pretext(pretext_uptime);
-	format_uptime(uptime);
 
 	if (wm == NULL) {
 		;

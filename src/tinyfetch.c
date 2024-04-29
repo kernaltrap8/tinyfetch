@@ -126,7 +126,7 @@ char* get_parent_shell(void) {
 long int get_uptime(void) {
     struct sysinfo s_info; // define struct for sysinfo
     int e = sysinfo(&s_info);
-    if (e != 0) { // if sysinfo doesnt return 0, return a negative exit code
+    if (e != 0) {
 		return -1;
     }
     
@@ -136,10 +136,10 @@ long int get_uptime(void) {
 void format_uptime(long int uptime) {
 	int hours, minutes, seconds;
 
-	hours = uptime / 3600; // convert uptime into hours
+	hours = uptime / 3600; 
 	uptime %= 3600;
-	minutes = uptime / 60; // convert uptime to minutes
-	seconds = uptime % 60; // convert uptime to seconds
+	minutes = uptime / 60; 
+	seconds = uptime % 60;
 
 	printf("%d hours, %d minutes, %d seconds\n", hours, minutes, seconds);
 }
@@ -165,13 +165,13 @@ void tinyinit(void) {
 }
 
 void rand_string(void) {
-	if (rand_enable == 1) { // only run if rand_enable is 1
+	if (rand_enable == 1) {
 		srand(time(NULL));
 		int num_strings = sizeof(strings) / sizeof(strings[0]);
 		int n = rand() % num_strings;
 		fflush(stdout);
 		printf("%s %s\n", decoration, strings[n]);
-	} else {}
+	}
 }
 
 void tinyuser(void) {
@@ -179,8 +179,7 @@ void tinyuser(void) {
 	char* user 	= getenv("USER");
 	printf("%s@", user); // username@, username is taken from char* user
 	
-	int total_length = strlen(user) + strlen(tiny.nodename) + 1; // calculate the chars needed for the decoration under user@host
-	// taken from utsname struct
+	int total_length = strlen(user) + strlen(tiny.nodename) + 1;
 	printf("%s\n", tiny.nodename);
 	for (int i = 0; i < total_length; i++) {
 		printf("-");
@@ -195,7 +194,7 @@ void tinyos(void) {
 	if (!strcmp(tiny.sysname, "Linux")) {
 		printf("GNU/");
 	}
-	fetchinfo(tiny.sysname);
+	fetchinfo(tiny.sysname); // OS name
 }
 
 void tinydist(void) {
@@ -223,11 +222,11 @@ void tinyarch(void) {
 void tinyshell(void) {
 	pretext(pretext_shell);
 	char* shell = get_parent_shell();
-	if (shell == NULL) { // if get_parent_shell() fails, fallback to getenv
+	if (shell == NULL) {
 		free(shell);
 		shell = getenv("SHELL");
 	}
-	printf("%s\n", shell); // shell var taken from getenv()
+	printf("%s\n", shell);
 	free(shell);
 }
 
@@ -245,9 +244,7 @@ void tinyuptime(void) {
 
 void tinywm(void) {
 	char* wm = getenv("XDG_CURRENT_DESKTOP");
-	if (wm == NULL) {
-		;
-	} else {
+	if (wm != NULL) {
 		pretext(pretext_wm);
 		printf("%s\n", wm); // wm variable taken from getenv()
 	}
@@ -258,7 +255,7 @@ void tinyram(void) {
 	int total_ram = file_parser("/proc/meminfo", "MemTotal: %d kB");
 	int ram_free = file_parser("/proc/meminfo", "MemAvailable: %d kB");
 
-	if (total_ram != -1 && ram_free != -1) { // if we got the values correctly, print them
+	if (total_ram != -1 && ram_free != -1) {
 		int ram_used = total_ram - ram_free;
 		
 		// convert the values from /proc/meminfo into GiB double values
@@ -267,7 +264,7 @@ void tinyram(void) {
     	double ram_free_gib = ram_free / (1024.0 * 1024.0);
 		pretext(pretext_ram);
 		printf("%.2f GiB used / %.2f GiB total (%.2f GiB free)\n", ram_used_gib, total_ram_gib, ram_free_gib);
-	} else {} // empty else statement, this will make nothing happen and not print ram avail/used.
+	}
 }
 
 void tinycpu(void) {
@@ -285,7 +282,7 @@ void tinyswap(void) {
 		double swap_used_gib = swap_used / (1024.0 * 1024.0);
 		pretext(pretext_swap);
 		printf("%.2f GiB used / %.2f GiB total\n", swap_used_gib, swap_total_gib);
-	} else {}
+	}
 }
 
 void tinykerninfo(void) {

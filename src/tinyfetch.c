@@ -5,7 +5,6 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <errno.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
@@ -178,13 +177,14 @@ void tinyuser(void) {
 	tinyinit();	
 	char* user 	= getenv("USER");
 	printf("%s@", user); // username@, username is taken from char* user
-	
-	int total_length = strlen(user) + strlen(tiny.nodename) + 1;
-	printf("%s\n", tiny.nodename);
-	for (int i = 0; i < total_length; i++) {
-		printf("-");
+	if (user != NULL) {
+		int total_length = strlen(user) + strlen(tiny.nodename) + 1;
+		printf("%s\n", tiny.nodename);
+		for (int i = 0; i < total_length; i++) {
+			printf("-");
+		}
+		printf("\n");		
 	}
-	printf("\n");
 }
 
 void tinyos(void) {
@@ -271,6 +271,7 @@ void tinycpu(void) {
 	pretext(pretext_processor);
 	char* cpu = file_parser_char("/proc/cpuinfo", "model name      : %[^\n]");
 	printf("%s\n", cpu);
+	free(cpu);
 }
 
 void tinyswap(void) {

@@ -21,6 +21,7 @@
 #define pretext_distro    "Distro:     "
 #define pretext_wm		  "DE/WM:	    "
 #define pretext_gpu		  "GPU:        "
+#define pretext_uptime    "Uptime:     "
 
 /*
 	function declaration

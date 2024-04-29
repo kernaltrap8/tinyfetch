@@ -5,10 +5,14 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <errno.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include <linux/unistd.h>
 #include <sys/utsname.h>
+#include <linux/kernel.h>
+#include <sys/sysinfo.h>
 #include "tinyfetch.h"
 
 /*
@@ -112,6 +116,19 @@ char* get_parent_shell(void) {
 	return strdup(cmdline); // return the contents of cmdline
 }
 
+/*
+	get uptime
+*/
+
+long int get_uptime() {
+    struct sysinfo s_info;
+    int e = sysinfo(&s_info);
+    if (e != 0) {
+		return -1;
+    }
+    
+    return s_info.uptime;
+}
  
 /*
 	main printing functions
@@ -142,7 +159,7 @@ void tinyfetch(void) {
 	if (uname(&tiny) == -1) {
 		perror("uname");
 	}
-	
+		
 	char* user 	= getenv("USER");
 	char* shell = get_parent_shell();
 	char* wm    = getenv("XDG_CURRENT_DESKTOP");
@@ -184,6 +201,13 @@ void tinyfetch(void) {
 
 	printf("%s\n", shell); // shell var taken from getenv()
 	free(shell);
+
+	long int uptime = get_uptime();
+	if (uptime == -1) {
+		;
+	}
+	pretext(pretext_uptime);
+	printf("%ld\n", uptime);
 
 	if (wm == NULL) {
 		;

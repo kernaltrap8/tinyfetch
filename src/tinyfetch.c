@@ -238,17 +238,29 @@ void tinyfetch(void) {
 
 	// process memory used and total avail.
 	int total_ram = file_parser("/proc/meminfo", "MemTotal: %d kB");
-	int ram_free = file_parser("/proc/meminfo", "MemFree: %d kB");
+	int ram_free = file_parser("/proc/meminfo", "MemAvailable: %d kB");
+	int total_swap = file_parser("/proc/meminfo", "SwapTotal: %d kB");
+	int swap_free = file_parser("/proc/meminfo", "SwapFree: %d kB");
 
 	if (total_ram != -1 && ram_free != -1) { // if we got the values correctly, print them
 		int ram_used = total_ram - ram_free;
+		
 		// convert the values from /proc/meminfo into GiB double values
 		double total_ram_gib = total_ram / (1024.0 * 1024.0);
    	 	double ram_used_gib = ram_used / (1024.0 * 1024.0);
     	double ram_free_gib = ram_free / (1024.0 * 1024.0);
 		pretext(pretext_ram);
-		printf("%.2f GiB / %.2f GiB (%.2f GiB free)\n", ram_used_gib, total_ram_gib, ram_free_gib);
+		printf("%.2f GiB used / %.2f GiB total (%.2f GiB free)\n", ram_used_gib, total_ram_gib, ram_free_gib);
 	} else {} // empty else statement, this will make nothing happen and not print ram avail/used.
+
+	if (total_swap != -1 && swap_free != -1) {
+		int swap_used = total_swap - swap_free;
+
+		double swap_total_gib = total_swap / (1024.0 * 1024.0);
+		double swap_used_gib = swap_used / (1024.0 * 1024.0);
+		pretext(pretext_swap);
+		printf("%.2f GiB used / %.2f GiB total\n", swap_used_gib, swap_total_gib);
+	} else {}
 
 	pretext(pretext_kernver); // kernel version
 	fetchinfo(tiny.version);

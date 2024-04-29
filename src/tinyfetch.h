@@ -22,6 +22,7 @@
 #define pretext_wm		  "DE/WM:	    "
 #define pretext_gpu		  "GPU:        "
 #define pretext_uptime    "Uptime:     "
+#define pretext_swap	  "Swap:       "
 
 /*
 	function declaration

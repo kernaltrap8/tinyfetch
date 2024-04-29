@@ -9,10 +9,12 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
-#include <linux/unistd.h>
 #include <sys/utsname.h>
+#ifdef __linux__
+#include <linux/unistd.h>
 #include <linux/kernel.h>
 #include <sys/sysinfo.h>
+#endif
 #include "tinyfetch.h"
 
 /*
@@ -119,7 +121,7 @@ char* get_parent_shell(void) {
 /*
 	get uptime
 */
-
+#ifdef __linux__
 long int get_uptime() {
     struct sysinfo s_info;
     int e = sysinfo(&s_info);
@@ -140,6 +142,7 @@ void format_uptime(long int uptime) {
 
 	printf("%d hours, %d minutes, %d seconds\n", hours, minutes, seconds);
 }
+#endif
  
 /*
 	main printing functions
@@ -212,7 +215,7 @@ void tinyfetch(void) {
 
 	printf("%s\n", shell); // shell var taken from getenv()
 	free(shell);
-
+	#ifdef __linux__
 	long int uptime = get_uptime();
 	if (uptime == -1) {
 		;
@@ -220,6 +223,7 @@ void tinyfetch(void) {
 		pretext(pretext_uptime);
 		format_uptime(uptime);
 	}
+	#endif
 
 	if (wm == NULL) {
 		;

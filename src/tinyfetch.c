@@ -129,6 +129,17 @@ long int get_uptime() {
     
     return s_info.uptime;
 }
+
+void format_uptime(long int uptime) {
+	int hours, minutes, seconds;
+
+	hours = uptime / 3600;
+	uptime %= 3600;
+	minutes = uptime / 60;
+	seconds = uptime % 60;
+
+	printf("%d hours, %d minutes, %d seconds\n", hours, minutes, seconds);
+}
  
 /*
 	main printing functions
@@ -207,7 +218,7 @@ void tinyfetch(void) {
 		;
 	}
 	pretext(pretext_uptime);
-	printf("%ld\n", uptime);
+	format_uptime(uptime);
 
 	if (wm == NULL) {
 		;

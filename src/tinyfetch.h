@@ -3,7 +3,7 @@
 	strings for tinyfetch
 */
 
-#define VERSION 	"2.7"
+#define VERSION 	"3.1a"
 #define decoration  "[·]"
 #define CMDLINE_PATH "/proc/%d/cmdline"
 #define help_banner "tinyfetch help\n -v or --version     \

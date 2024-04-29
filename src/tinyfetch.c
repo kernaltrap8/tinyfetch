@@ -215,7 +215,7 @@ void tinyfetch(void) {
 
 	printf("%s\n", shell); // shell var taken from getenv()
 	free(shell);
-	#ifdef __linux__
+	#ifdef __linux__ // only include this code if __linux__ is defined
 	long int uptime = get_uptime();
 	if (uptime == -1) {
 		;
@@ -229,7 +229,7 @@ void tinyfetch(void) {
 		;
 	} else {
 		pretext(pretext_wm);
-		printf("%s\n", wm);
+		printf("%s\n", wm); // wm variable taken from getenv()
 	}
 
 	pretext(pretext_processor);
@@ -242,8 +242,12 @@ void tinyfetch(void) {
 
 	if (total_ram != -1 && ram_free != -1) { // if we got the values correctly, print them
 		int ram_used = total_ram - ram_free;
+		// convert the values from /proc/meminfo into GiB double values
+		double total_ram_gib = total_ram / (1024.0 * 1024.0);
+   	 	double ram_used_gib = ram_used / (1024.0 * 1024.0);
+    	double ram_free_gib = ram_free / (1024.0 * 1024.0);
 		pretext(pretext_ram);
-		printf("%d KiB / %d KiB (%d KiB free)\n", ram_used, total_ram, ram_free);
+		printf("%.2f GiB / %.2f GiB (%.2f GiB free)\n", ram_used_gib, total_ram_gib, ram_free_gib);
 	} else {} // empty else statement, this will make nothing happen and not print ram avail/used.
 
 	pretext(pretext_kernver); // kernel version

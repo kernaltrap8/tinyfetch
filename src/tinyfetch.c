@@ -121,24 +121,25 @@ char* get_parent_shell(void) {
 /*
 	get uptime
 */
+
 #ifdef __linux__
-long int get_uptime() {
-    struct sysinfo s_info;
+long int get_uptime(void) {
+    struct sysinfo s_info; // define struct for sysinfo
     int e = sysinfo(&s_info);
-    if (e != 0) {
+    if (e != 0) { // if sysinfo doesnt return 0, return a negative exit code
 		return -1;
     }
     
-    return s_info.uptime;
+    return s_info.uptime; // return uptime
 }
 
 void format_uptime(long int uptime) {
 	int hours, minutes, seconds;
 
-	hours = uptime / 3600;
+	hours = uptime / 3600; // convert uptime into hours
 	uptime %= 3600;
-	minutes = uptime / 60;
-	seconds = uptime % 60;
+	minutes = uptime / 60; // convert uptime to minutes
+	seconds = uptime % 60; // convert uptime to seconds
 
 	printf("%d hours, %d minutes, %d seconds\n", hours, minutes, seconds);
 }
@@ -147,16 +148,6 @@ void format_uptime(long int uptime) {
 /*
 	main printing functions
 */
-
-void rand_string(void) {
-	if (rand_enable == 1) {
-		srand(time(NULL));
-		int num_strings = sizeof(strings) / sizeof(strings[0]);
-		int n = rand() % num_strings;
-		fflush(stdout);
-		printf("%s %s\n", decoration, strings[n]);
-	} else {}
-}
 
 void pretext(const char* string) {
 	printf("%s", string);
@@ -167,16 +158,25 @@ void fetchinfo(char* structname) {
 	printf("%s\n", structname);
 }
 
-void tinyfetch(void) {
-	// all pretext functions do the same thing (defined at the top of this file)
-	// when a char string as passed to it, it will print it then flush the stdout buffer.
+void tinyinit(void) {
 	if (uname(&tiny) == -1) {
 		perror("uname");
 	}
-		
+}
+
+void rand_string(void) {
+	if (rand_enable == 1) { // only run if rand_enable is 1
+		srand(time(NULL));
+		int num_strings = sizeof(strings) / sizeof(strings[0]);
+		int n = rand() % num_strings;
+		fflush(stdout);
+		printf("%s %s\n", decoration, strings[n]);
+	} else {}
+}
+
+void tinyuser(void) {
+	tinyinit();	
 	char* user 	= getenv("USER");
-	char* shell = get_parent_shell();
-	char* wm    = getenv("XDG_CURRENT_DESKTOP");
 	printf("%s@", user); // username@, username is taken from char* user
 	
 	int total_length = strlen(user) + strlen(tiny.nodename) + 1; // calculate the chars needed for the decoration under user@host
@@ -186,36 +186,53 @@ void tinyfetch(void) {
 		printf("-");
 	}
 	printf("\n");
-	
-	rand_string(); // this function is only ran if rand_enable is 1, which is enabled in the cmdline args handling.
+}
+
+void tinyos(void) {
+	tinyinit();
 	pretext(pretext_OS);
 	// tiny.sysname doesnt return what uname -o would, so here we check if it == Linux, and if it does, print GNU/ before tiny.sysname
 	if (!strcmp(tiny.sysname, "Linux")) {
 		printf("GNU/");
 	}
-	
 	fetchinfo(tiny.sysname);
+}
+
+void tinydist(void) {
 	pretext(pretext_distro);
-	char* distro_name = file_parser_char("/etc/os-release", "PRETTY_NAME=\"%[^\"]\""); // parsing at isolating the PRETTY_NAME and VERSON_ID
+	char* distro_name = file_parser_char("/etc/os-release", "PRETTY_NAME=\"%[^\"]\""); // parsing and isolating the PRETTY_NAME and VERSON_ID
 	char* distro_ver = file_parser_char("/etc/os-release", "VERSION_ID=\"%[^\"]\"%*c");
 	printf("%s %s\n", distro_name, distro_ver);
 	free(distro_name);
 	free(distro_ver);
+}
+
+void tinykern(void) {
+	tinyinit();
 	pretext(pretext_kernel);
 	fetchinfo(tiny.release); // gets kernel name
+}
+
+void tinyarch(void) {
+	tinyinit();
 	pretext(pretext_arch);
 	printf(tiny.machine); // CPU arch
 	printf("\n");
-	pretext(pretext_shell);
+}
 
+void tinyshell(void) {
+	pretext(pretext_shell);
+	char* shell = get_parent_shell();
 	if (shell == NULL) { // if get_parent_shell() fails, fallback to getenv
 		free(shell);
 		shell = getenv("SHELL");
 	}
-
 	printf("%s\n", shell); // shell var taken from getenv()
 	free(shell);
-	#ifdef __linux__ // only include this code if __linux__ is defined
+}
+
+#ifdef __linux__ // only include this code if __linux__ is defined
+void tinyuptime(void) {
 	long int uptime = get_uptime();
 	if (uptime == -1) {
 		;
@@ -223,24 +240,23 @@ void tinyfetch(void) {
 		pretext(pretext_uptime);
 		format_uptime(uptime);
 	}
-	#endif
+}
+#endif
 
+void tinywm(void) {
+	char* wm = getenv("XDG_CURRENT_DESKTOP");
 	if (wm == NULL) {
 		;
 	} else {
 		pretext(pretext_wm);
 		printf("%s\n", wm); // wm variable taken from getenv()
 	}
+}
 
-	pretext(pretext_processor);
-	char* cpu = file_parser_char("/proc/cpuinfo", "model name      : %[^\n]");
-	printf("%s\n", cpu);
-
+void tinyram(void) {
 	// process memory used and total avail.
 	int total_ram = file_parser("/proc/meminfo", "MemTotal: %d kB");
 	int ram_free = file_parser("/proc/meminfo", "MemAvailable: %d kB");
-	int total_swap = file_parser("/proc/meminfo", "SwapTotal: %d kB");
-	int swap_free = file_parser("/proc/meminfo", "SwapFree: %d kB");
 
 	if (total_ram != -1 && ram_free != -1) { // if we got the values correctly, print them
 		int ram_used = total_ram - ram_free;
@@ -252,20 +268,52 @@ void tinyfetch(void) {
 		pretext(pretext_ram);
 		printf("%.2f GiB used / %.2f GiB total (%.2f GiB free)\n", ram_used_gib, total_ram_gib, ram_free_gib);
 	} else {} // empty else statement, this will make nothing happen and not print ram avail/used.
+}
 
+void tinycpu(void) {
+	pretext(pretext_processor);
+	char* cpu = file_parser_char("/proc/cpuinfo", "model name      : %[^\n]");
+	printf("%s\n", cpu);
+}
+
+void tinyswap(void) {
+	int total_swap = file_parser("/proc/meminfo", "SwapTotal: %d kB");
+	int swap_free = file_parser("/proc/meminfo", "SwapFree: %d kB");
 	if (total_swap != -1 && swap_free != -1) {
 		int swap_used = total_swap - swap_free;
-
 		double swap_total_gib = total_swap / (1024.0 * 1024.0);
 		double swap_used_gib = swap_used / (1024.0 * 1024.0);
 		pretext(pretext_swap);
 		printf("%.2f GiB used / %.2f GiB total\n", swap_used_gib, swap_total_gib);
 	} else {}
+}
 
+void tinykerninfo(void) {
+	tinyinit();
 	pretext(pretext_kernver); // kernel version
 	fetchinfo(tiny.version);
 }
 
+
+void tinyfetch(void) {
+	// all pretext functions do the same thing (defined at the top of this file)
+	// when a char string as passed to it, it will print it then flush the stdout buffer.
+	tinyuser();
+	rand_string(); // this function is only ran if rand_enable is 1, which is enabled in the cmdline args handling.
+	tinyos(); // get the OS name
+	tinydist(); // get the dist name
+	tinykern(); // get kernel name
+	tinyarch(); // get CPU arch
+	tinyshell(); // get shell name
+	#ifdef __linux
+	tinyuptime(); // get uptime if building on Linux
+	#endif
+	tinywm(); // get Window Manager/DE name
+	tinycpu(); // get CPU name
+	tinyram(); // get ram values
+	tinyswap(); // get swap values
+	tinykerninfo(); // get kernel info
+}
 /*
 	main function
 */
@@ -316,6 +364,35 @@ int main(int argc, char* argv[]) {
 				printf("%s", buffer);
 				(void)system(buffer); // breaks shell detectio	
 			}
+		} else if (!strcmp(argv[1], "-o")) {
+			tinyos();
+		} else if (!strcmp(argv[1], "-d")) {
+			tinydist();
+		} else if (!strcmp(argv[1], "-k")) {
+			tinykern();
+		} else if (!strcmp(argv[1], "-a")) {
+			tinyarch();
+		} else if (!strcmp(argv[1], "-s")) {
+			tinyshell();
+		} else if (!strcmp(argv[1], "-u")) {
+			#ifdef __linux__
+			tinyuptime();
+			#endif
+		} else if (!strcmp(argv[1], "-w")) {
+			tinywm();	
+		} else if (!strcmp(argv[1], "--ram")) {
+			tinyram();
+		} else if (!strcmp(argv[1], "-c")) {
+			tinycpu();
+		} else if (!strcmp(argv[1], "--swap")) {
+			tinyswap();
+		} else if (!strcmp(argv[1], "--kernel-info")) {
+			tinykerninfo();
+		} else if (!strcmp(argv[1], "--genie")) {
+			rand_enable = 1;
+			rand_string();
+		} else if (!strcmp(argv[1], "--user")) {
+			tinyuser();
 		} else {
 			printf("tinyfetch: Unknown command line argument.\n %s %s", decoration, help_banner);
 			return 1;

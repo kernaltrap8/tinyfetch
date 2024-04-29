@@ -32,10 +32,30 @@ int file_parser(const char* file, const char* line_to_read);
 char* file_parser_char(const char* file, const char* line_to_read);
 char* get_hostname(void);
 char* get_parent_shell(void);
-void rand_string(void);
+#ifdef __linux__
+long int get_uptime(void);
+void format_uptime(long int uptime);
+#endif
 void pretext(const char* string);
 void fetchinfo(char* structname);
+void tinyinit(void);
+void rand_string(void);
+void tinyuser(void);
+void tinyos(void);
+void tinydist();
+void tinykern(void);
+void tinyarch(void);
+void tinyshell(void);
+#ifdef __linux__
+void tinyuptime(void);
+#endif
+void tinywm(void);
+void tinyram(void);
+void tinycpu(void);
+void tinyswap(void);
+void tinykerninfo(void);
 void tinyfetch(void);
+int main(int argc, char* argv[]);
 
 /*
 	environment variables

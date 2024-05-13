@@ -297,6 +297,9 @@ void tinyram(void) {
 void tinycpu(void) {
   pretext(pretext_processor);
   char *cpu = file_parser_char("/proc/cpuinfo", "model name      : %[^\n]");
+  if (cpu == NULL) {
+    cpu = file_parser_char("/proc/cpuinfo", "cpu      : %[^\n]");
+  }
   int cpu_count = get_cpu_count();
   printf("%s (%d)\n", cpu, cpu_count);
   free(cpu);

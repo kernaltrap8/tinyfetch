@@ -13,6 +13,8 @@
 #include <linux/kernel.h>
 #include <linux/unistd.h>
 #include <sys/sysinfo.h>
+#else
+#include <sys/sysctl.h>
 #endif
 #include "tinyfetch.h"
 
@@ -40,15 +42,21 @@ int file_parser(const char *file, const char *line_to_read) {
 }
 
 char *file_parser_char(const char *file, const char *line_to_read) {
-  FILE *meminfo = fopen(file, "r"); // open the file to parse
+  FILE *meminfo = fopen(file, "r");
   if (meminfo == NULL) {
-    return NULL; // return an error code if the file doesnt exist
+    return NULL;
   }
 
-  char line[256]; // char buffer
+  char line[256];
   while (fgets(line, sizeof(line), meminfo)) {
-    char *parsed_string =
-        (char *)malloc(strlen(line) + 1); // allocate memory for the string
+    // Find the position of the comma
+    char *comma_ptr = strchr(line, ',');
+    if (comma_ptr != NULL) {
+      // Truncate the string at the position of the comma
+      *comma_ptr = '\0';
+    }
+
+    char *parsed_string = (char *)malloc(strlen(line) + 1);
     if (!parsed_string) {
       fclose(meminfo);
       return NULL;
@@ -62,8 +70,8 @@ char *file_parser_char(const char *file, const char *line_to_read) {
     free(parsed_string);
   }
 
-  fclose(meminfo); // close the file
-  return NULL;     // null exit code. if we get here, an error occurred.
+  fclose(meminfo);
+  return NULL;
 }
 
 /*
@@ -177,6 +185,20 @@ void rand_string(void) {
   }
 }
 
+int get_cpu_count(void) {
+#ifdef __linux__
+  return sysconf(_SC_NPROCESSORS_ONLN);
+#else
+  int cpu_count;
+  size_t count_size = sizeof(cpu_count);
+  if (sysctlbyname("hw.ncpu", &cpu_count, &count_size, NULL, 0) == -1) {
+    perror("sysctlbyname");
+    return -1;
+  }
+  return cpu_count;
+#endif
+}
+
 void tinyuser(void) {
   tinyinit();
   char *user = getenv("USER");
@@ -282,7 +304,8 @@ void tinyram(void) {
 void tinycpu(void) {
   pretext(pretext_processor);
   char *cpu = file_parser_char("/proc/cpuinfo", "model name      : %[^\n]");
-  printf("%s\n", cpu);
+  int cpu_count = get_cpu_count();
+  printf("%s (%d)\n", cpu, cpu_count);
   free(cpu);
 }
 
@@ -355,7 +378,7 @@ int main(int argc, char *argv[]) {
       }
       fflush(
           stdout); // we must flush the buffer before printing to prevent issues
-      printf("%s  %s\n", decoration, argv[2]);
+      printf("%s %s\n", decoration, argv[2]);
       tinyfetch();
       return 0;
     } else if (!strcmp(argv[1], "-r") || !strcmp(argv[1], "--random") ||
@@ -399,6 +422,8 @@ int main(int argc, char *argv[]) {
       tinycpu();
     } else if (!strcmp(argv[1], "--swap")) {
       tinyswap();
+      int c = get_cpu_count();
+      printf("(%d)", c);
     } else if (!strcmp(argv[1], "--kernel-info")) {
       tinykerninfo();
     } else if (!strcmp(argv[1], "--genie")) {

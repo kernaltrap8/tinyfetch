@@ -215,7 +215,8 @@ void tinydist(void) {
     distro_name = "UNIX-Like OS";
     distro_ver = " ";
   }
-  printf("%s %s\n", distro_name, distro_ver);
+  tinyinit();
+  printf("%s %s %s \n", distro_name, distro_ver, tiny.machine);
   free(distro_name);
   free(distro_ver);
 }
@@ -224,13 +225,6 @@ void tinykern(void) {
   tinyinit();
   pretext(pretext_kernel);
   fetchinfo(tiny.release); // gets kernel name
-}
-
-void tinyarch(void) {
-  tinyinit();
-  pretext(pretext_arch);
-  printf("%s", tiny.machine); // CPU arch
-  printf("\n");
 }
 
 void tinyshell(void) {
@@ -320,7 +314,6 @@ void tinyfetch(void) {
   tinyos();      // get the OS name
   tinydist();    // get the dist name
   tinykern();    // get kernel name
-  tinyarch();    // get CPU arch
   tinyshell();   // get shell name
 #ifdef __linux
   tinyuptime(); // get uptime if building on Linux
@@ -389,8 +382,6 @@ int main(int argc, char *argv[]) {
       tinydist();
     } else if (!strcmp(argv[1], "-k")) {
       tinykern();
-    } else if (!strcmp(argv[1], "-a")) {
-      tinyarch();
     } else if (!strcmp(argv[1], "-s")) {
       tinyshell();
     } else if (!strcmp(argv[1], "-u")) {

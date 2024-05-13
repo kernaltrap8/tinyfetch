@@ -62,7 +62,12 @@ char *file_parser_char(const char *file, const char *line_to_read) {
       return NULL;
     }
 
-    strcpy(parsed_string, line); // Copy the modified line into parsed_string
+    // Copy characters from line to parsed_string until a comma or end of line
+    int i;
+    for (i = 0; line[i] != '\0' && line[i] != ','; i++) {
+      parsed_string[i] = line[i];
+    }
+    parsed_string[i] = '\0'; // Null-terminate the string
 
     if (sscanf(parsed_string, line_to_read, parsed_string) == 1) {
       fclose(meminfo);

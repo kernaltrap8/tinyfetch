@@ -206,9 +206,9 @@ void tinyos(void) {
 
 void tinydist(void) {
   pretext(pretext_distro);
-  char *distro_name = file_parser_char(
-      "/etc/os-release", "PRETTY_NAME=\"%[^\"]\""); // parsing and isolating the
-                                                    // PRETTY_NAME and VERSON_ID
+  char *distro_name = file_parser_char("/etc/os-release",
+                                       "NAME=%s"); // parsing and isolating the
+                                                   // PRETTY_NAME and VERSON_ID
   char *distro_ver =
       file_parser_char("/etc/os-release", "VERSION_ID=\"%[^\"]\"%*c");
   if (!strcmp(distro_name, "(null)") && !strcmp(distro_ver, "(null)")) {

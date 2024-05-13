@@ -62,7 +62,9 @@ char *file_parser_char(const char *file, const char *line_to_read) {
       return NULL;
     }
 
-    if (sscanf(line, line_to_read, parsed_string) == 1) {
+    strcpy(parsed_string, line); // Copy the modified line into parsed_string
+
+    if (sscanf(parsed_string, line_to_read, parsed_string) == 1) {
       fclose(meminfo);
       return parsed_string;
     }
@@ -71,7 +73,7 @@ char *file_parser_char(const char *file, const char *line_to_read) {
   }
 
   fclose(meminfo);
-  return NULL; // Return NULL if line pattern not found
+  return NULL;
 }
 
 /*

@@ -42,34 +42,21 @@ int file_parser(const char *file, const char *line_to_read) {
 }
 
 char *file_parser_char(const char *file, const char *line_to_read) {
-  FILE *meminfo = fopen(file, "r");
+  FILE *meminfo = fopen(file, "r"); // open the file to parse
   if (meminfo == NULL) {
-    return NULL;
+    return NULL; // return an error code if the file doesnt exist
   }
 
-  char line[256];
+  char line[256]; // char buffer
   while (fgets(line, sizeof(line), meminfo)) {
-    // Find the position of the comma
-    char *comma_ptr = strchr(line, ',');
-    if (comma_ptr != NULL) {
-      // Truncate the string at the position of the comma
-      *comma_ptr = '\0';
-    }
-
-    char *parsed_string = (char *)malloc(strlen(line) + 1);
+    char *parsed_string =
+        (char *)malloc(strlen(line) + 1); // allocate memory for the string
     if (!parsed_string) {
       fclose(meminfo);
       return NULL;
     }
 
-    // Copy characters from line to parsed_string until a comma or end of line
-    int i;
-    for (i = 0; line[i] != '\0' && line[i] != ','; i++) {
-      parsed_string[i] = line[i];
-    }
-    parsed_string[i] = '\0'; // Null-terminate the string
-
-    if (sscanf(parsed_string, line_to_read, parsed_string) == 1) {
+    if (sscanf(line, line_to_read, parsed_string) == 1) {
       fclose(meminfo);
       return parsed_string;
     }
@@ -77,10 +64,9 @@ char *file_parser_char(const char *file, const char *line_to_read) {
     free(parsed_string);
   }
 
-  fclose(meminfo);
-  return NULL;
+  fclose(meminfo); // close the file
+  return NULL;     // null exit code. if we get here, an error occurred.
 }
-
 /*
         hostname handling
 */

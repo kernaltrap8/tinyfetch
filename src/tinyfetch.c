@@ -71,7 +71,7 @@ char *file_parser_char(const char *file, const char *line_to_read) {
   }
 
   fclose(meminfo);
-  return NULL;
+  return NULL; // Return NULL if line pattern not found
 }
 
 /*

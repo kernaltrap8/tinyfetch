@@ -295,13 +295,19 @@ void tinyram(void) {
 }
 
 void tinycpu(void) {
+  tinyinit();
   pretext(pretext_processor);
   char *cpu = file_parser_char("/proc/cpuinfo", "model name      : %[^\n]");
-  if (cpu == NULL) {
-    cpu = file_parser_char("/proc/cpuinfo", "cpu      : %[^\n]");
-  }
+  char *cpu_fallback = file_parser_char("/proc/cpuinfo", "cpu      : %[^\n]");
   int cpu_count = get_cpu_count();
-  printf("%s (%d)\n", cpu, cpu_count);
+  if (cpu == NULL) {
+    printf("%s (%d)\n", cpu_fallback, cpu_count);
+  }
+  if (cpu == NULL && cpu_fallback == NULL) {
+    printf("Unknown %s CPU\n", tiny.machine);
+  } else {
+    printf("%s (%d)\n", cpu, cpu_count);
+  }
   free(cpu);
 }
 

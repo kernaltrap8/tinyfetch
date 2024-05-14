@@ -300,15 +300,15 @@ void tinycpu(void) {
   char *cpu = file_parser_char("/proc/cpuinfo", "model name      : %[^\n]");
   char *cpu_fallback = file_parser_char("/proc/cpuinfo", "cpu      : %[^\n]");
   int cpu_count = get_cpu_count();
-  if (cpu == NULL) {
-    printf("%s (%d)\n", cpu_fallback, cpu_count);
-  }
-  if (cpu == NULL && cpu_fallback == NULL) {
-    printf("Unknown %s CPU\n", tiny.machine);
-  } else if (cpu != NULL) {
+  if (cpu != NULL) {
     printf("%s (%d)\n", cpu, cpu_count);
+    free(cpu);
+  } else if (cpu_fallback != NULL) {
+    printf("%s (%d)\n", cpu_fallback, cpu_count);
+    free(cpu_fallback);
+  } else {
+    printf("Unknown %s CPU\n", tiny.machine);
   }
-  free(cpu);
 }
 
 void tinyswap(void) {

@@ -307,7 +307,7 @@ void tinycpu(void) {
     printf("%s (%d)\n", cpu_fallback, cpu_count);
     free(cpu_fallback);
   } else {
-    printf("Unknown %s CPU\n", tiny.machine);
+    printf("Unknown %s CPU (%d)\n", tiny.machine, cpu_count);
   }
 }
 

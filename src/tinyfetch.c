@@ -166,8 +166,7 @@ char *get_cpu_name(void) {
   char cpu_name[1024];
   size_t cpu_name_size = sizeof(cpu_name);
 
-  if (sysctlbyname("machdep.cpu_brand", cpu_name, &cpu_name_size, NULL, 0) ==
-      -1) {
+  if (sysctlbyname("hw.model", cpu_name, &cpu_name_size, NULL, 0) == -1) {
     perror("sysctl");
     return NULL;
   }
@@ -363,12 +362,6 @@ void tinyswap(void) {
   }
 }
 
-void tinykerninfo(void) {
-  tinyinit();
-  pretext(pretext_kernver); // kernel version
-  fetchinfo(tiny.version);
-}
-
 void tinyfetch(void) {
   // all pretext functions do the same thing (defined at the top of this file)
   // when a char string as passed to it, it will print it then flush the stdout
@@ -383,11 +376,10 @@ void tinyfetch(void) {
 #ifdef __linux
   tinyuptime(); // get uptime if building on Linux
 #endif
-  tinywm();       // get Window Manager/DE name
-  tinycpu();      // get CPU name
-  tinyram();      // get ram values
-  tinyswap();     // get swap values
-  tinykerninfo(); // get kernel info
+  tinywm();   // get Window Manager/DE name
+  tinycpu();  // get CPU name
+  tinyram();  // get ram values
+  tinyswap(); // get swap values
 }
 /*
         main function

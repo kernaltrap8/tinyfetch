@@ -87,6 +87,10 @@ char *get_hostname(void) {
 */
 
 char *get_parent_shell(void) {
+  if (access("/proc", F_OK) == -1) {
+    return NULL;
+  }
+
   pid_t ppid = getppid(); // get parent proc ID
   char cmdline_path[64];
   snprintf(cmdline_path, sizeof(cmdline_path), CMDLINE_PATH, ppid);
@@ -150,6 +154,31 @@ void format_uptime(long int uptime) {
   seconds = uptime % 60;
 
   printf("%d hours, %d minutes, %d seconds\n", hours, minutes, seconds);
+}
+#endif
+
+/*
+        get cpu name (BSD only)
+*/
+
+#ifdef __FreeBSD__
+char *get_cpu_name(void) {
+  char cpu_name[1024];
+  size_t cpu_name_size = sizeof(cpuname);
+
+  if (sysctlbyname("machdep.cpu_brand", cpu_name, &cpu_name_size, NULL, 0) ==
+      -1) {
+    perror("sysctl");
+    return NULL;
+  }
+
+  char *cpu_name_str = strdup(cpu_name);
+  if (cpu_name_str == NULL) {
+    perror("strdup");
+    return NULL;
+  }
+
+  return cpu_name_str;
 }
 #endif
 
@@ -308,9 +337,16 @@ void tinycpu(void) {
   } else if (cpu_fallback != NULL) {
     printf("%s (%d)\n", cpu_fallback, cpu_count);
     free(cpu_fallback);
-  } else {
-    printf("Unknown %s CPU (%d)\n", tiny.machine, cpu_count);
   }
+#ifdef __FreeBSD__
+  char *cpu = get_cpu_name();
+  int cpu_count = get_cpu_count();
+  if (cpu != NULL) {
+    printf("%s (%d)", cpu, cpu_count);
+  } else {
+    printf("Unknown %s CPU (%d)", tiny.machine, cpu_count);
+  }
+#endif
 }
 
 void tinyswap(void) {

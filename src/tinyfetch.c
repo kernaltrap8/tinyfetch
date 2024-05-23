@@ -164,7 +164,7 @@ void format_uptime(long int uptime) {
 #ifdef __FreeBSD__
 char *get_cpu_name(void) {
   char cpu_name[1024];
-  size_t cpu_name_size = sizeof(cpuname);
+  size_t cpu_name_size = sizeof(cpu_name);
 
   if (sysctlbyname("machdep.cpu_brand", cpu_name, &cpu_name_size, NULL, 0) ==
       -1) {
@@ -328,6 +328,7 @@ void tinyram(void) {
 void tinycpu(void) {
   tinyinit();
   pretext(pretext_processor);
+#ifdef __linux__
   char *cpu = file_parser_char("/proc/cpuinfo", "model name      : %[^\n]");
   char *cpu_fallback = file_parser_char("/proc/cpuinfo", "cpu      : %[^\n]");
   int cpu_count = get_cpu_count();
@@ -338,6 +339,7 @@ void tinycpu(void) {
     printf("%s (%d)\n", cpu_fallback, cpu_count);
     free(cpu_fallback);
   }
+#endif
 #ifdef __FreeBSD__
   char *cpu = get_cpu_name();
   int cpu_count = get_cpu_count();

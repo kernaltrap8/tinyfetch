@@ -458,8 +458,6 @@ int main(int argc, char *argv[]) {
       tinyswap();
       int c = get_cpu_count();
       printf("(%d)", c);
-    } else if (!strcmp(argv[1], "--kernel-info")) {
-      tinykerninfo();
     } else if (!strcmp(argv[1], "--genie")) {
       rand_enable = 1;
       rand_string();

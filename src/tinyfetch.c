@@ -96,7 +96,7 @@ char *get_parent_shell(void) {
     return NULL; // return NULL if cmdline_file doesnt exist
   }
 
-  char cmdline[256];
+  char cmdline[1024]; // was 256
   if (fgets(cmdline, sizeof(cmdline), cmdline_file) ==
       NULL) { // if something bad happened, free memory and return nullptr
     fclose(cmdline_file);

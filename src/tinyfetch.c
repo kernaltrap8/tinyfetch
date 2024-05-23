@@ -105,6 +105,8 @@ char *get_parent_shell(void) {
 
   fclose(cmdline_file); // close the file
 
+  cmdline[strcspn(cmdline, "\n")] = '\0';
+
   if (cmdline[0] == '-') { // NOTE: this fixes a bug that occurs sometimes
                            // either when using tmux or Konsole.
     memmove(cmdline, cmdline + 1, strlen(cmdline));
@@ -116,9 +118,9 @@ char *get_parent_shell(void) {
     *newline_pos = '\0';
   }
 
-  if (!strncmp(cmdline, "/bin/", 5)) {
-    return strdup(cmdline + 5); // return string with /bin/ removed, if it
-                                // exists in the first place.
+  if (!strncmp(cmdline, "/bin/", 5) ||
+      !strncmp(cmdline, "/usr/local/bin", 15)) {
+    return strdup(cmdline + ((cmdline[1] == 'u') ? 15 : 5));
   }
 
   return strdup(cmdline); // return the contents of cmdline

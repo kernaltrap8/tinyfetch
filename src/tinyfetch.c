@@ -16,7 +16,7 @@
 #endif
 #ifdef __FreeBSD__
 #include <sys/sysctl.h>
-#include <sys/type.h>
+#include <sys/types.h>
 #endif
 #include "tinyfetch.h"
 

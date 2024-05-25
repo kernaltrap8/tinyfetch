@@ -106,6 +106,7 @@ char *freebsd_sysctl(char *ctlname) {
 
   return ctlreturn;
 }
+#endif
 
 /*
         shell detection

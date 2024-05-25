@@ -235,7 +235,7 @@ int get_cpu_count(void) {
 #ifdef __linux__
   return sysconf(_SC_NPROCESSORS_ONLN);
 #else
-  int cpu_count = frebsd_sysctl("hw.ncpu");
+  int cpu_count = freebsd_sysctl("hw.ncpu");
   return cpu_count;
 #endif
 }
@@ -292,10 +292,12 @@ void tinykern(void) {
 
 void tinyshell(void) {
   pretext(pretext_shell);
+#ifdef __linux__
   char *shell = get_parent_shell();
-  if (shell == NULL) {
-    shell = get_parent_shell_noproc();
-  }
+#endif
+#ifdef __FreeBSD__
+  shell = get_parent_shell_noproc();
+#endif
   printf("%s\n", shell);
   free(shell);
 }

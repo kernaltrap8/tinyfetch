@@ -389,9 +389,9 @@ void tinycpu(void) {
   char *cpu = freebsd_sysctl("hw.model");
   int cpu_count = get_cpu_count();
   if (cpu != NULL) {
-    printf("%s (%d)", cpu, cpu_count);
+    printf("%s (%d)\n", cpu, cpu_count);
   } else {
-    printf("Unknown %s CPU (%d)", tiny.machine, cpu_count);
+    printf("Unknown %s CPU (%d)\n", tiny.machine, cpu_count);
   }
 #endif
 }

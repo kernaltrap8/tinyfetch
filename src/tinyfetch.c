@@ -357,16 +357,8 @@ void tinyram(void) {
     return;
   }
 
-  unsigned long long free_ram;
-  len = sizeof(free_ram);
-  int mib_free[] = {CTL_VM, VM_SWAP_USAGE};
-  if (sysctl(mib_free, 2, &free_ram, &len, NULL, 0) == -1) {
-    perror("sysctl");
-    return;
-  }
-
-  // Convert to bytes (VM_UPL_INFO provides the count of pages)
-  free_ram *= getpagesize();
+  // We won't include swap detection in FreeBSD
+  unsigned long long free_ram = 0; // Initialize free RAM to 0
 #endif
 
   if (total_ram > 0 && free_ram > 0) {

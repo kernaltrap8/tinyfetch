@@ -94,7 +94,7 @@ char *freebsd_sysctl(char *ctlname) {
   size_t buf_size = sizeof(buf);
 
   if (sysctlbyname(ctlname, buf, &buf_size, NULL, 0) == -1) {
-    perror("sysctl");
+    perror("sysctlbyname");
     return NULL;
   }
 
@@ -105,6 +105,19 @@ char *freebsd_sysctl(char *ctlname) {
   }
 
   return ctlreturn;
+}
+
+int freebsd_sysctl_int(const char *ctlname) {
+  int value;
+  size_t len = sizeof(value);
+
+  // Convert the name to a sysctl MIB and retrieve the value
+  if (sysctlbyname(ctlname, &value, &len, NULL, 0) == -1) {
+    perror("sysctlbyname");
+    return -1;
+  }
+
+  return value;
 }
 #endif
 
@@ -236,7 +249,7 @@ int get_cpu_count(void) {
 #ifdef __linux__
   return sysconf(_SC_NPROCESSORS_ONLN);
 #else
-  int cpu_count = freebsd_sysctl("hw.ncpu");
+  int cpu_count = freebsd_sysctl_int("hw.ncpu");
   return cpu_count;
 #endif
 }
@@ -297,7 +310,7 @@ void tinyshell(void) {
   char *shell = get_parent_shell();
 #endif
 #ifdef __FreeBSD__
-  shell = get_parent_shell_noproc();
+  char *shell = get_parent_shell_noproc();
 #endif
   printf("%s\n", shell);
   free(shell);

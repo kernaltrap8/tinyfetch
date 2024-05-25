@@ -359,7 +359,7 @@ void tinyram(void) {
 
   unsigned long long free_ram;
   len = sizeof(free_ram);
-  int mib_free[] = {CTL_VM, VM_UPL_INFO};
+  int mib_free[] = {CTL_VM, VM_SWAP_USAGE};
   if (sysctl(mib_free, 2, &free_ram, &len, NULL, 0) == -1) {
     perror("sysctl");
     return;

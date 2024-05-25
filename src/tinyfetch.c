@@ -13,8 +13,10 @@
 #include <linux/kernel.h>
 #include <linux/unistd.h>
 #include <sys/sysinfo.h>
-#else
+#endif
+#ifdef __FreeBSD__
 #include <sys/sysctl.h>
+#include <sys/type.h>
 #endif
 #include "tinyfetch.h"
 
@@ -83,9 +85,32 @@ char *get_hostname(void) {
 }
 
 /*
-        shell detection
+        FreeBSD sysctl calling
 */
 
+#ifdef __FreeBSD__
+char *freebsd_sysctl(char *ctlname) {
+  char buf[1024];
+  size_t buf_size = sizeof(buf);
+
+  if (sysctlbyname(ctlname, buf, &buf_size, NULL, 0) == -1) {
+    perror("sysctl");
+    return NULL;
+  }
+
+  char *ctlreturn = strdup(buf);
+  if (ctlreturn == NULL) {
+    perror("strdup");
+    return NULL;
+  }
+
+  return ctlreturn;
+}
+
+/*
+        shell detection
+*/
+#ifdef __linux__
 char *get_parent_shell(void) {
   pid_t ppid = getppid(); // get parent proc ID
   char cmdline_path[64];
@@ -125,7 +150,8 @@ char *get_parent_shell(void) {
 
   return strdup(cmdline); // return the contents of cmdline
 }
-
+#endif
+#ifdef __FreeBSD__
 char *get_parent_shell_noproc(void) {
   char *shell_path = getenv("SHELL");
   if (shell_path == NULL) {
@@ -149,6 +175,7 @@ char *get_parent_shell_noproc(void) {
 
   return strdup(shell_name);
 }
+#endif
 
 /*
         get uptime
@@ -174,30 +201,6 @@ void format_uptime(long int uptime) {
   seconds = uptime % 60;
 
   printf("%d hours, %d minutes, %d seconds\n", hours, minutes, seconds);
-}
-#endif
-
-/*
-        get cpu name (BSD only)
-*/
-
-#ifdef __FreeBSD__
-char *get_cpu_name(void) {
-  char cpu_name[1024];
-  size_t cpu_name_size = sizeof(cpu_name);
-
-  if (sysctlbyname("hw.model", cpu_name, &cpu_name_size, NULL, 0) == -1) {
-    perror("sysctl");
-    return NULL;
-  }
-
-  char *cpu_name_str = strdup(cpu_name);
-  if (cpu_name_str == NULL) {
-    perror("strdup");
-    return NULL;
-  }
-
-  return cpu_name_str;
 }
 #endif
 
@@ -232,12 +235,7 @@ int get_cpu_count(void) {
 #ifdef __linux__
   return sysconf(_SC_NPROCESSORS_ONLN);
 #else
-  int cpu_count;
-  size_t count_size = sizeof(cpu_count);
-  if (sysctlbyname("hw.ncpu", &cpu_count, &count_size, NULL, 0) == -1) {
-    perror("sysctlbyname");
-    return -1;
-  }
+  int cpu_count = frebsd_sysctl("hw.ncpu");
   return cpu_count;
 #endif
 }
@@ -323,23 +321,55 @@ void tinywm(void) {
 }
 
 void tinyram(void) {
-  // process memory used and total avail.
-  int memavail = file_parser("/proc/meminfo", "MemAvailable: %d kB");
-  int total_ram = file_parser("/proc/meminfo", "MemTotal: %d kB");
-  int ram_free = (memavail != -1)
-                     ? memavail
-                     : file_parser("/proc/meminfo", "MemFree: %d kB");
+#ifdef __linux__
+  struct sysinfo sys_info;
+  if (sysinfo(&sys_info) != 0) {
+    perror("sysinfo");
+    return;
+  }
 
-  if (total_ram != -1 && ram_free != -1) {
-    int ram_used = total_ram - ram_free;
+  long long total_ram = sys_info.totalram * sys_info.mem_unit;
+  long long free_ram = sys_info.freeram * sys_info.mem_unit;
+#endif
 
-    // convert the values from /proc/meminfo into GiB double values
-    double total_ram_gib = total_ram / (1024.0 * 1024.0);
-    double ram_used_gib = ram_used / (1024.0 * 1024.0);
-    double ram_free_gib = ram_free / (1024.0 * 1024.0);
-    pretext(pretext_ram);
-    printf("%.2f GiB used / %.2f GiB total (%.2f GiB free)\n", ram_used_gib,
-           total_ram_gib, ram_free_gib);
+#ifdef __FreeBSD__
+  int mib_total[] = {CTL_HW, HW_PHYSMEM};
+  unsigned long long total_ram;
+  size_t len = sizeof(total_ram);
+  if (sysctl(mib_total, 2, &total_ram, &len, NULL, 0) == -1) {
+    perror("sysctl");
+    return;
+  }
+
+  int mib_free[] = {CTL_VM, VM_STATS, VM_STATS_VM, VM_V_FREE_COUNT};
+  unsigned long free_pages;
+  len = sizeof(free_pages);
+  if (sysctl(mib_free, 4, &free_pages, &len, NULL, 0) == -1) {
+    perror("sysctl");
+    return;
+  }
+
+  int mib_page_size[] = {CTL_VM, VM_STATS, VM_STATS_VM, VM_V_PAGE_SIZE};
+  unsigned long page_size;
+  len = sizeof(page_size);
+  if (sysctl(mib_page_size, 4, &page_size, &len, NULL, 0) == -1) {
+    perror("sysctl");
+    return;
+  }
+
+  long long free_ram = free_pages * page_size;
+#endif
+
+  if (total_ram > 0 && free_ram > 0) {
+    long long used_ram = total_ram - free_ram;
+    double total_ram_gib = total_ram / (1024.0 * 1024.0 * 1024.0);
+    double used_ram_gib = used_ram / (1024.0 * 1024.0 * 1024.0);
+    double free_ram_gib = free_ram / (1024.0 * 1024.0 * 1024.0);
+
+    printf("%.2f GiB used / %.2f GiB total (%.2f GiB free)\n", used_ram_gib,
+           total_ram_gib, free_ram_gib);
+  } else {
+    printf("Failed to retrieve memory information.\n");
   }
 }
 
@@ -359,8 +389,7 @@ void tinycpu(void) {
   }
 #endif
 #ifdef __FreeBSD__
-  char *cpu = get_cpu_name();
-  int cpu_count = get_cpu_count();
+  char *cpu = freebsd_sysctl("hw.model") int cpu_count = get_cpu_count();
   if (cpu != NULL) {
     printf("%s (%d)", cpu, cpu_count);
   } else {

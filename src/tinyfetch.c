@@ -358,20 +358,16 @@ void tinyram(void) {
   }
 
   // We won't include swap detection in FreeBSD
-  // unsigned long long free_ram = 0; // Initialize free RAM to 0
+  unsigned long long free_ram = 0; // Initialize free RAM to 0
 #endif
 
-  if (total_ram > 0 && free_ram > 0) {
-    long long used_ram = total_ram - free_ram;
-    double total_ram_gib = total_ram / (1024.0 * 1024.0 * 1024.0);
-    double used_ram_gib = used_ram / (1024.0 * 1024.0 * 1024.0);
-    double free_ram_gib = free_ram / (1024.0 * 1024.0 * 1024.0);
-
-    printf("%.2f GiB used / %.2f GiB total (%.2f GiB free)\n", used_ram_gib,
-           total_ram_gib, free_ram_gib);
-  } else {
-    printf("Failed to retrieve memory information.\n");
-  }
+  long long used_ram = total_ram - free_ram;
+  double total_ram_gib = total_ram / (1024.0 * 1024.0 * 1024.0);
+  double used_ram_gib = used_ram / (1024.0 * 1024.0 * 1024.0);
+  double free_ram_gib = free_ram / (1024.0 * 1024.0 * 1024.0);
+  pretext(pretext_ram);
+  printf("%.2f GiB used / %.2f GiB total (%.2f GiB free)\n", used_ram_gib,
+         total_ram_gib, free_ram_gib);
 }
 
 void tinycpu(void) {

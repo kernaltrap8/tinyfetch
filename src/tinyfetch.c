@@ -349,31 +349,24 @@ void tinyram(void) {
 #endif
 
 #ifdef __FreeBSD__
-  int mib_total[] = {CTL_HW, HW_PHYSMEM};
   unsigned long long total_ram;
   size_t len = sizeof(total_ram);
+  int mib_total[] = {CTL_HW, HW_PHYSMEM};
   if (sysctl(mib_total, 2, &total_ram, &len, NULL, 0) == -1) {
     perror("sysctl");
     return;
   }
 
-  int mib_page_size[] = {CTL_HW, HW_PAGESIZE};
-  unsigned long page_size;
-  len = sizeof(page_size);
-  if (sysctl(mib_page_size, 2, &page_size, &len, NULL, 0) == -1) {
+  unsigned long long free_ram;
+  len = sizeof(free_ram);
+  int mib_free[] = {CTL_VM, VM_UPL_INFO};
+  if (sysctl(mib_free, 2, &free_ram, &len, NULL, 0) == -1) {
     perror("sysctl");
     return;
   }
 
-  int mib_free[] = {CTL_VM, VM_V_FREE_COUNT};
-  unsigned long free_pages;
-  len = sizeof(free_pages);
-  if (sysctl(mib_free, 2, &free_pages, &len, NULL, 0) == -1) {
-    perror("sysctl");
-    return;
-  }
-
-  long long free_ram = free_pages * page_size;
+  // Convert to bytes (VM_UPL_INFO provides the count of pages)
+  free_ram *= getpagesize();
 #endif
 
   if (total_ram > 0 && free_ram > 0) {

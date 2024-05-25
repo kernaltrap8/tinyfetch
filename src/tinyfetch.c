@@ -87,10 +87,6 @@ char *get_hostname(void) {
 */
 
 char *get_parent_shell(void) {
-  if (access("/proc", F_OK) == -1) {
-    return NULL;
-  }
-
   pid_t ppid = getppid(); // get parent proc ID
   char cmdline_path[64];
   snprintf(cmdline_path, sizeof(cmdline_path), CMDLINE_PATH, ppid);
@@ -128,6 +124,30 @@ char *get_parent_shell(void) {
   }
 
   return strdup(cmdline); // return the contents of cmdline
+}
+
+char *get_parent_shell_noproc(void) {
+  char *shell_path = getenv("SHELL");
+  if (shell_path == NULL) {
+    return NULL; // $SHELL not set
+  }
+
+  char *shell_name =
+      strrchr(shell_path, '/'); // find the last occurrence of '/'
+  if (shell_name == NULL) {
+    shell_name =
+        shell_path; // if '/' not found, the entire path is the shell name
+  } else {
+    shell_name++; // move past the '/'
+  }
+
+  // remove characters if needed
+  char *newline_pos = strchr(shell_name, '\n');
+  if (newline_pos != NULL) {
+    *newline_pos = '\0';
+  }
+
+  return strdup(shell_name);
 }
 
 /*
@@ -276,8 +296,7 @@ void tinyshell(void) {
   pretext(pretext_shell);
   char *shell = get_parent_shell();
   if (shell == NULL) {
-    free(shell);
-    shell = getenv("SHELL");
+    shell = get_parent_shell_noproc();
   }
   printf("%s\n", shell);
   free(shell);

@@ -357,23 +357,15 @@ void tinyram(void) {
     return;
   }
 
-  int mib_free[] = {CTL_VM, VM_STATS, VM_STATS_VM, VM_V_FREE_COUNT};
-  unsigned long free_pages;
-  len = sizeof(free_pages);
-  if (sysctl(mib_free, 4, &free_pages, &len, NULL, 0) == -1) {
+  int mib_free[] = {CTL_VM, VM_SWAP_TOTAL};
+  unsigned long long free_swap;
+  len = sizeof(free_swap);
+  if (sysctl(mib_free, 2, &free_swap, &len, NULL, 0) == -1) {
     perror("sysctl");
     return;
   }
 
-  int mib_page_size[] = {CTL_VM, VM_STATS, VM_STATS_VM, VM_V_PAGE_SIZE};
-  unsigned long page_size;
-  len = sizeof(page_size);
-  if (sysctl(mib_page_size, 4, &page_size, &len, NULL, 0) == -1) {
-    perror("sysctl");
-    return;
-  }
-
-  long long free_ram = free_pages * page_size;
+  long long free_ram = free_swap;
 #endif
 
   if (total_ram > 0 && free_ram > 0) {

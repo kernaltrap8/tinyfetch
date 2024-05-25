@@ -358,7 +358,7 @@ void tinyram(void) {
   }
 
   // We won't include swap detection in FreeBSD
-  unsigned long long free_ram = 0; // Initialize free RAM to 0
+  // unsigned long long free_ram = 0; // Initialize free RAM to 0
 #endif
 
   if (total_ram > 0 && free_ram > 0) {

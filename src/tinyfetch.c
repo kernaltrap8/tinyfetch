@@ -350,7 +350,7 @@ void tinyshell(void) {
 void tinyuptime(void) {
   long int uptime = get_uptime();
   if (uptime == -1) {
-    return 0;
+    return NULL;
   } else {
     pretext(pretext_uptime);
     format_uptime(uptime);

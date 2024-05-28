@@ -3,7 +3,7 @@
         strings for tinyfetch
 */
 
-#define VERSION "3.9a"
+#define VERSION "4.0"
 #define decoration "[·]"
 #define CMDLINE_PATH "/proc/%d/cmdline"
 #define help_banner                                                            \
@@ -41,7 +41,6 @@ const char *strings[] = {
     "uhhhhhh",
     "hmmmmmm",
     "erm what the sigma",
-    "I LOVE BALLS",
     ":3",
     ";3",
     ":3c",
@@ -50,7 +49,6 @@ const char *strings[] = {
     "wow im in love with this fetch program!!!",
     "erm, what the flip.",
     "hi ellie",
-    "hiaaaaaa lavvy ;333",
     "AHHHHHHHHH!!!!",
     "what the scallop",
     "WHAT THE SIGMA",
@@ -68,7 +66,6 @@ const char *strings[] = {
     "x3",
     ":(){ :|:& };:",
     "you should ':(){ :|:& };:' yourself, NOW!",
-    "BALLS AND NUTS AND BOYS AND AND ANDNAND",
     "(null)",
     "echo ':(){ :|:& };:' > /etc/skel/.bashrc",
     "sustainable future ai circular economy ai ceo clyde ai linux",
@@ -84,12 +81,10 @@ const char *strings[] = {
     "why did i put so many things in const char* strings[]",
     "255 lines of code!!!",
     "i can see you.",
-    "fish: Job 1, 'tinyfetch' terminated by signal SIGSEGV (Address boundary "
-    "error)",
+    "fish: Job 1, 'tinyfetch' terminated by signal SIGSEGV (Address boundary error)",
     "tinyfetch: ioctl: Inappropriate ioctl for device.",
     ":trolley:",
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod "
-    "tempor",
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor",
     "g++ tinyfetch.cpp -o tinyfetch",
     "clang tinyfetch.cpp -o tinyfetch",
     "me when rand() % 20 but i forget to seed it",
@@ -111,4 +106,5 @@ const char *strings[] = {
     "aHR0cDovL3dlYi5hcmNoaXZlLm9yZy93ZWIvMjAyNDA0MTYwNDI2MzIvaHR0cDovLzB4MC5zdC"
     "9YLWtkLnR4dA==",
     "argc is a array, its index starts at 0",
-    "system(\"uname -o\")"};
+    "system(\"uname -o\")"
+    "Fully ported to FreeBSD!"};

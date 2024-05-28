@@ -429,6 +429,7 @@ void tinyswap(void) {
   int swap_free = file_parser("/proc/meminfo", "SwapFree: %d kB");
   #endif
   #ifdef __FreeBSD__
+  // temporary
   int total_swap = 2048;
   int swap_free = 50;
   #endif

@@ -207,8 +207,8 @@ char *get_parent_shell_noproc(void) {
         get uptime
 */
 
-#ifdef __linux__
 long int get_uptime(void) {
+  #ifdef __linux__
   struct sysinfo s_info; // define struct for sysinfo
   int e = sysinfo(&s_info);
   if (e != 0) {
@@ -216,6 +216,26 @@ long int get_uptime(void) {
   }
 
   return s_info.uptime; // return uptime
+  #endif
+  #ifdef __FreeBSD__
+  int mib[2];
+  size_t len;
+  struct timeval boottime;
+
+  mib[0] = CTL_KERN;
+  mib[1] = KERN_BOOTTIME;
+
+  len = sizeof(boottime);
+  if (sysctl(mib, 2, &boottime, &len, NULL, 0) == -1) {
+    perror("sysctl");
+    return -1;
+  }
+
+  time_t now = time(NULL);
+  time_t uptime = now - boottime.tv_sec;
+
+  return uptime;
+  #endif
 }
 
 void format_uptime(long int uptime) {
@@ -228,7 +248,6 @@ void format_uptime(long int uptime) {
 
   printf("%d hours, %d minutes, %d seconds\n", hours, minutes, seconds);
 }
-#endif
 
 /*
         main printing functions
@@ -328,17 +347,15 @@ void tinyshell(void) {
   free(shell);
 }
 
-#ifdef __linux__ // only include this code if __linux__ is defined
 void tinyuptime(void) {
   long int uptime = get_uptime();
   if (uptime == -1) {
-    ;
+    return 0;
   } else {
     pretext(pretext_uptime);
     format_uptime(uptime);
   }
 }
-#endif
 
 void tinywm(void) {
   char *wm = getenv("XDG_CURRENT_DESKTOP");

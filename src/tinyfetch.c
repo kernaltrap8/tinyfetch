@@ -206,9 +206,8 @@ char *get_parent_shell_noproc(void) {
 /*
         get uptime
 */
-
+#ifdef __linux__
 long int get_uptime(void) {
-  #ifdef __linux__
   struct sysinfo s_info; // define struct for sysinfo
   int e = sysinfo(&s_info);
   if (e != 0) {
@@ -216,8 +215,10 @@ long int get_uptime(void) {
   }
 
   return s_info.uptime; // return uptime
-  #endif
-  #ifdef __FreeBSD__
+}
+#endif
+#ifdef __FreeBSD__
+long int get_uptime_freebsd(void) {
   int mib[2];
   size_t len;
   struct timeval boottime;
@@ -235,8 +236,8 @@ long int get_uptime(void) {
   time_t uptime = now - boottime.tv_sec;
 
   return uptime;
-  #endif
 }
+#endif
 
 void format_uptime(long int uptime) {
   int hours, minutes, seconds;
@@ -348,7 +349,12 @@ void tinyshell(void) {
 }
 
 void tinyuptime(void) {
+  #ifdef __linux__
   long int uptime = get_uptime();
+  #endif
+  #ifdef __FreeBSD__
+  long int uptime = get_uptime_freebsd();
+  #endif
   if (uptime == -1) {
     ;
   } else {
@@ -440,9 +446,7 @@ void tinyfetch(void) {
   tinydist();    // get the dist name
   tinykern();    // get kernel name
   tinyshell();   // get shell name
-#ifdef __linux
   tinyuptime(); // get uptime if building on Linux
-#endif
   tinywm();   // get Window Manager/DE name
   tinycpu();  // get CPU name
   tinyram();  // get ram values

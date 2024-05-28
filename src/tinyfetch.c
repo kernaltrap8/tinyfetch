@@ -123,7 +123,7 @@ int freebsd_sysctl_int(const char *ctlname) {
 unsigned long long ull_freebsd_sysctl(const char *ctlname) {
   unsigned long long value;
   size_t len = sizeof(value);
-  
+
   if (sysctlbyname(ctlname, &value, &len, NULL, 0) == -1) {
     perror("sysctlbyname");
     return -1;
@@ -362,9 +362,6 @@ void tinyram(void) {
 
 #ifdef __FreeBSD__
   unsigned long long total_ram = ull_freebsd_sysctl("vm.stats.vm.v_page_count") * sysconf(_SC_PAGESIZE);
-  size_t len = sizeof(total_ram);
-
-  // We won't include swap detection in FreeBSD
   unsigned long long free_ram = ull_freebsd_sysctl("vm.stats.vm.v_free_count") * sysconf(_SC_PAGESIZE); 
 #endif
 

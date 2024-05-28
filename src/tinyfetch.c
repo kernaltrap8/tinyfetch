@@ -424,8 +424,14 @@ void tinycpu(void) {
 }
 
 void tinyswap(void) {
+  #ifdef __linux__
   int total_swap = file_parser("/proc/meminfo", "SwapTotal: %d kB");
   int swap_free = file_parser("/proc/meminfo", "SwapFree: %d kB");
+  #endif
+  #ifdef __FreeBSD__
+  int total_swap = 2048;
+  int swap_free = 50;
+  #endif
   if (total_swap != -1 && swap_free != -1) {
     int swap_used = total_swap - swap_free;
     double swap_total_gib = total_swap / (1024.0 * 1024.0);
@@ -436,8 +442,6 @@ void tinyswap(void) {
 }
 
 void tinyfetch(void) {
-  char *wm = getenv("XDG_CURRENT_DESKTOP");
-  printf("%s", wm);
   // all pretext functions do the same thing (defined at the top of this file)
   // when a char string as passed to it, it will print it then flush the stdout
   // buffer.

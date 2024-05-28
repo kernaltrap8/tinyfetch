@@ -436,6 +436,8 @@ void tinyswap(void) {
 }
 
 void tinyfetch(void) {
+  char *wm = tinywm();
+  printf("%s", wm);
   // all pretext functions do the same thing (defined at the top of this file)
   // when a char string as passed to it, it will print it then flush the stdout
   // buffer.

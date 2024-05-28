@@ -120,8 +120,8 @@ int freebsd_sysctl_int(const char *ctlname) {
   return value;
 }
 
-unsigned long long ull_freebsd_sysctl(const char *ctlname) {
-  unsigned long long value;
+long long ull_freebsd_sysctl(const char *ctlname) {
+  long long value;
   size_t len = sizeof(value);
 
   if (sysctlbyname(ctlname, &value, &len, NULL, 0) == -1) {
@@ -361,8 +361,8 @@ void tinyram(void) {
 #endif
 
 #ifdef __FreeBSD__
-  unsigned long long total_ram = ull_freebsd_sysctl("vm.stats.vm.v_page_count") * sysconf(_SC_PAGESIZE);
-  unsigned long long free_ram = ull_freebsd_sysctl("vm.stats.vm.v_free_count") * sysconf(_SC_PAGESIZE); 
+  long long total_ram = ull_freebsd_sysctl("vm.stats.vm.v_page_count") * sysconf(_SC_PAGESIZE);
+  long long free_ram = ull_freebsd_sysctl("vm.stats.vm.v_free_count") * sysconf(_SC_PAGESIZE); 
 #endif
 
   long long used_ram = total_ram - free_ram;

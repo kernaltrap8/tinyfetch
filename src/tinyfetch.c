@@ -436,7 +436,7 @@ void tinyswap(void) {
 }
 
 void tinyfetch(void) {
-  char *wm = tinywm();
+  char *wm = getenv("XDG_CURRENT_DESKTOP");
   printf("%s", wm);
   // all pretext functions do the same thing (defined at the top of this file)
   // when a char string as passed to it, it will print it then flush the stdout

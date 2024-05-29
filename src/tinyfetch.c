@@ -372,6 +372,26 @@ void tinywm(void) {
   }
 }
 
+#ifdef __FreeBSD__
+void get_swap_stats(long long *total, long long *used, long long *free) {
+  (*total) = nullptr;
+  (*used) = nullptr;
+  (*free) = nullptr;
+  kvm_t *kvmh = nullptr;
+  long page_s = sysconf(_SC_PAGESIZE);
+  kvmh = kvm_open(nullptr, "/dev/null", "/dev/null", O_RDONLY, nullptr);
+  if (!kvmh)
+    return;
+  struct kvm_swap k_swap;
+  if (kvm_getswapinfo(kvmh, &k_swap, 1, 0) != -1) {
+    (*total) = k_swap.ksw_total * page_s;
+    (*used) = k_swap.ksw_used * page_s;
+    (*free) = (k_swap.ksw_total - k_swap.ksw_used) * page_s;
+  }
+  kvm_close(kvmh);
+}
+#endif
+
 void tinyram(void) {
 #ifdef __linux__
   // process memory used and total avail.
@@ -446,41 +466,16 @@ void tinyswap(void) {
     pretext(pretext_swap);
     printf("%.2f GiB used / %.2f GiB total (%.2f GiB free)\n", swap_used_gib,
            swap_total_gib, swap_free_gib);
-  }
 #endif
 #ifdef __FreeBSD__
-  kvm_t *kd;
-  struct kvm_swap
-      swap_info[32]; // Assuming max 32 swap devices, adjust as necessary
-
-  kd = kvm_openfiles(NULL, NULL, NULL, NULL, "kvm_getswapinfo");
-  if (kd == NULL) {
-    perror("kvm_openfiles");
-    return;
+    long long total_swap = 0, long long swap_used = 0, long long swap_free = 0;
+    get_swap_stats(&total_swap, &swap_used, &swap_free);
+    double swap_total_gib = total_swap / (1024.0 * 1024.0, 1024.0);
+    double swap_used_gib = swap_used / (1024.0 * 1024.0, 1024.0);
+    double swap_free_gib = swap_free / (1024.0 * 1024.0, 1024.0);
+    printf("%.2f GiB used / %.2f GiB total (%.2f GiB free)\n", swap_used_gib,
+           swap_total_gib, swap_free_gib);
   }
-
-  int n = kvm_getswapinfo(kd, swap_info,
-                          sizeof(swap_info) / sizeof(swap_info[0]), 0);
-  if (n == -1) {
-    perror("kvm_getswapinfo");
-    kvm_close(kd);
-    return;
-  }
-
-  double total_swap_gib = 0.0;
-  double used_swap_gib = 0.0;
-  for (int i = 0; i < n; i++) {
-    total_swap_gib += swap_info[i].ksw_total / (1024.0 * 1024.0);
-    used_swap_gib +=
-        (swap_info[i].ksw_total - swap_info[i].ksw_used) / (1024.0 * 1024.0);
-  }
-  double free_swap_gib = total_swap_gib - used_swap_gib;
-
-  pretext(pretext_swap);
-  printf("%.2f GiB used / %.2f GiB total (%.2f GiB free)\n", used_swap_gib,
-         total_swap_gib, free_swap_gib);
-
-  kvm_close(kd);
 #endif
 }
 

@@ -467,51 +467,36 @@ void tinyswap(void) {
     pretext(pretext_swap);
     printf("%.2f GiB used / %.2f GiB total (%.2f GiB free)\n", swap_used_gib,
            swap_total_gib, swap_free_gib);
+  }
 #endif
 #ifdef __FreeBSD__
-    long long total_swap = 0;
-    long long swap_used = 0;
-    long long swap_free = 0;
-    get_swap_stats(&total_swap, &swap_used, &swap_free);
-    double swap_total_gib = total_swap / (1024.0 * 1024.0 * 1024.0);
-    double swap_used_gib = swap_used / (1024.0 * 1024.0 * 1024.0);
-    double swap_free_gib = swap_free / (1024.0 * 1024.0 * 1024.0);
-    printf("%.2f GiB used / %.2f GiB total (%.2f GiB free)\n", swap_used_gib,
-           swap_total_gib, swap_free_gib);
-  }
+  long long total_swap = 0;
+  long long swap_used = 0;
+  long long swap_free = 0;
+  get_swap_stats(&total_swap, &swap_used, &swap_free);
+  double swap_total_gib = total_swap / (1024.0 * 1024.0 * 1024.0);
+  double swap_used_gib = swap_used / (1024.0 * 1024.0 * 1024.0);
+  double swap_free_gib = swap_free / (1024.0 * 1024.0 * 1024.0);
+  printf("%.2f GiB used / %.2f GiB total (%.2f GiB free)\n", swap_used_gib,
+         swap_total_gib, swap_free_gib);
 #endif
 }
 
 void tinyfetch(void) {
-  // all pretext functions do the same thing (defined at the top of this file)
-  // when a char string as passed to it, it will print it then flush the stdout
-  // buffer.
   tinyuser();
-  rand_string(); // this function is only ran if rand_enable is 1, which is
-                 // enabled in the cmdline args handling.
-  tinyos();      // get the OS name
-  tinydist();    // get the dist name
-  tinykern();    // get kernel name
-  tinyshell();   // get shell name
-  tinyuptime();  // get uptime if building on Linux
-  tinywm();      // get Window Manager/DE name
-  tinycpu();     // get CPU name
-  tinyram();     // get ram values
-  tinyswap();    // get swap values
+  rand_string();
+  tinyos();
+  tinydist();
+  tinykern();
+  tinyshell();
+  tinyuptime();
+  tinywm();
+  tinycpu();
+  tinyram();
+  tinyswap();
 }
 
-/*
-        main function
-*/
-
 int main(int argc, char *argv[]) {
-
-  /*
-          command line args
-  */
-
-  // if no args are passed, run the default printing function
-
   if (argc == 1) {
     tinyfetch();
     return 0;
@@ -529,8 +514,7 @@ int main(int argc, char *argv[]) {
         printf("no message provided.\n");
         return 1;
       }
-      fflush(
-          stdout); // we must flush the buffer before printing to prevent issues
+      fflush(stdout);
       printf("%s %s\n", decoration, argv[2]);
       tinyfetch();
       return 0;
@@ -550,7 +534,7 @@ int main(int argc, char *argv[]) {
         buffer[sizeof(buffer) - 1] = '\0';
         strcat(buffer, " | lolcat");
         printf("%s", buffer);
-        (void)system(buffer); // breaks shell detectio
+        (void)system(buffer);
       }
     } else if (!strcmp(argv[1], "-o")) {
       tinyos();
@@ -575,8 +559,6 @@ int main(int argc, char *argv[]) {
       tinycpu();
     } else if (!strcmp(argv[1], "--swap")) {
       tinyswap();
-      int c = get_cpu_count();
-      printf("(%d)", c);
     } else if (!strcmp(argv[1], "--genie")) {
       rand_enable = 1;
       rand_string();
@@ -589,6 +571,5 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  // exit
   return 0;
 }

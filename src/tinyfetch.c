@@ -375,12 +375,12 @@ void tinywm(void) {
 
 #ifdef __FreeBSD__
 int get_swap_stats(long long *total, long long *used, long long *free) {
-  (*total) = NULL;
-  (*used) = NULL;
-  (*free) = NULL;
+  (*total) = -1;
+  (*used) = -1;
+  (*free) = -1;
   kvm_t *kvmh = NULL;
   long page_s = sysconf(_SC_PAGESIZE);
-  kvmh = kvm_open(nullptr, "/dev/null", "/dev/null", O_RDONLY, nullptr);
+  kvmh = kvm_open(NULL, "/dev/null", "/dev/null", O_RDONLY, NULL);
   if (!kvmh)
     return -1;
   struct kvm_swap k_swap;

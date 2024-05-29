@@ -349,12 +349,12 @@ void tinyshell(void) {
 }
 
 void tinyuptime(void) {
-  #ifdef __linux__
+#ifdef __linux__
   long int uptime = get_uptime();
-  #endif
-  #ifdef __FreeBSD__
+#endif
+#ifdef __FreeBSD__
   long int uptime = get_uptime_freebsd();
-  #endif
+#endif
   if (uptime == -1) {
     ;
   } else {
@@ -373,20 +373,31 @@ void tinywm(void) {
 
 void tinyram(void) {
 #ifdef __linux__
-  struct sysinfo sys_info;
-  if (sysinfo(&sys_info) != 0) {
-    perror("sysinfo");
-    return;
-  }
+  // process memory used and total avail.
+  int memavail = file_parser("/proc/meminfo", "MemAvailable: %d kB");
+  int total_ram = file_parser("/proc/meminfo", "MemTotal: %d kB");
+  int ram_free = (memavail != -1)
+                     ? memavail
+                     : file_parser("/proc/meminfo", "MemFree: %d kB");
 
-  long long total_ram = sys_info.totalram * sys_info.mem_unit;
-  long long free_ram = sys_info.freeram * sys_info.mem_unit;
+  if (total_ram != -1 && ram_free != -1) {
+    int ram_used = total_ram - ram_free;
+
+    // convert the values from /proc/meminfo into GiB double values
+    double total_ram_gib = total_ram / (1024.0 * 1024.0);
+    double ram_used_gib = ram_used / (1024.0 * 1024.0);
+    double ram_free_gib = ram_free / (1024.0 * 1024.0);
+    pretext(pretext_ram);
+    printf("%.2f GiB used / %.2f GiB total (%.2f GiB free)\n", ram_used_gib,
+           total_ram_gib, ram_free_gib);
+  }
 #endif
 
 #ifdef __FreeBSD__
-  long long total_ram = ull_freebsd_sysctl("vm.stats.vm.v_page_count") * sysconf(_SC_PAGESIZE);
-  long long free_ram = ull_freebsd_sysctl("vm.stats.vm.v_free_count") * sysconf(_SC_PAGESIZE); 
-#endif
+  long long total_ram =
+      ull_freebsd_sysctl("vm.stats.vm.v_page_count") * sysconf(_SC_PAGESIZE);
+  long long free_ram =
+      ull_freebsd_sysctl("vm.stats.vm.v_free_count") * sysconf(_SC_PAGESIZE);
 
   long long used_ram = total_ram - free_ram;
   double total_ram_gib = total_ram / (1024.0 * 1024.0 * 1024.0);
@@ -395,6 +406,7 @@ void tinyram(void) {
   pretext(pretext_ram);
   printf("%.2f GiB used / %.2f GiB total (%.2f GiB free)\n", used_ram_gib,
          total_ram_gib, free_ram_gib);
+#endif
 }
 
 void tinycpu(void) {
@@ -424,15 +436,15 @@ void tinycpu(void) {
 }
 
 void tinyswap(void) {
-  #ifdef __linux__
+#ifdef __linux__
   int total_swap = file_parser("/proc/meminfo", "SwapTotal: %d kB");
   int swap_free = file_parser("/proc/meminfo", "SwapFree: %d kB");
-  #endif
-  #ifdef __FreeBSD__
+#endif
+#ifdef __FreeBSD__
   // temporary
   int total_swap = 2048;
   int swap_free = 50;
-  #endif
+#endif
   if (total_swap != -1 && swap_free != -1) {
     int swap_used = total_swap - swap_free;
     double swap_total_gib = total_swap / (1024.0 * 1024.0);
@@ -453,11 +465,11 @@ void tinyfetch(void) {
   tinydist();    // get the dist name
   tinykern();    // get kernel name
   tinyshell();   // get shell name
-  tinyuptime(); // get uptime if building on Linux
-  tinywm();   // get Window Manager/DE name
-  tinycpu();  // get CPU name
-  tinyram();  // get ram values
-  tinyswap(); // get swap values
+  tinyuptime();  // get uptime if building on Linux
+  tinywm();      // get Window Manager/DE name
+  tinycpu();     // get CPU name
+  tinyram();     // get ram values
+  tinyswap();    // get swap values
 }
 /*
         main function

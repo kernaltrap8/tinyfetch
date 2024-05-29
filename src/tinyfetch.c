@@ -434,11 +434,9 @@ void tinycpu(void) {
 #endif
 }
 
-void tinyswap(void) {
-#ifdef __linux__
+int tinyswap(void) {
   int total_swap = file_parser("/proc/meminfo", "SwapTotal: %d kB");
   int swap_free = file_parser("/proc/meminfo", "SwapFree: %d kB");
-
   if (total_swap != -1 && swap_free != -1) {
     int swap_used = total_swap - swap_free;
     double swap_total_gib = total_swap / (1024.0 * 1024.0);
@@ -447,42 +445,9 @@ void tinyswap(void) {
     pretext(pretext_swap);
     printf("%.2f GiB used / %.2f GiB total (%.2f GiB free)\n", swap_used_gib,
            swap_total_gib, swap_free_gib);
+  } else {
+    return -1;
   }
-#endif
-#ifdef __FreeBSD__
-  kvm_t *kd;
-  struct kvm_swap
-      swap_info[32]; // Assuming max 32 swap devices, adjust as necessary
-
-  kd = kvm_openfiles(NULL, NULL, NULL, O_RDONLY, "kvm_getswapinfo");
-  if (kd == NULL) {
-    perror("kvm_openfiles");
-    return;
-  }
-
-  int n = kvm_getswapinfo(kd, swap_info,
-                          sizeof(swap_info) / sizeof(swap_info[0]), 0);
-  if (n == -1) {
-    perror("kvm_getswapinfo");
-    kvm_close(kd);
-    return;
-  }
-
-  double total_swap_gib = 0.0;
-  double used_swap_gib = 0.0;
-  for (int i = 0; i < n; i++) {
-    total_swap_gib += swap_info[i].ksw_total / (1024.0 * 1024.0);
-    used_swap_gib +=
-        (swap_info[i].ksw_total - swap_info[i].ksw_used) / (1024.0 * 1024.0);
-  }
-  double free_swap_gib = total_swap_gib - used_swap_gib;
-
-  pretext(pretext_swap);
-  printf("%.2f GiB used / %.2f GiB total (%.2f GiB free)\n", used_swap_gib,
-         total_swap_gib, free_swap_gib);
-
-  kvm_close(kd);
-#endif
 }
 
 void tinyfetch(void) {
@@ -500,7 +465,9 @@ void tinyfetch(void) {
   tinywm();      // get Window Manager/DE name
   tinycpu();     // get CPU name
   tinyram();     // get ram values
-  tinyswap();    // get swap values
+  if (tinyswap() == -1) {
+    return;
+  }
 }
 /*
         main function

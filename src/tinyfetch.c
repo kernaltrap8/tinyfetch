@@ -374,22 +374,25 @@ void tinywm(void) {
 }
 
 #ifdef __FreeBSD__
-void get_swap_stats(long long *total, long long *used, long long *free) {
+int get_swap_stats(long long *total, long long *used, long long *free) {
   (*total) = NULL;
   (*used) = NULL;
   (*free) = NULL;
   kvm_t *kvmh = NULL;
   long page_s = sysconf(_SC_PAGESIZE);
-  kvmh = kvm_open(NULL, "/dev/null", "/dev/null", O_RDONLY, NULL);
+  kvmh = kvm_open(nullptr, "/dev/null", "/dev/null", O_RDONLY, nullptr);
   if (!kvmh)
-    return;
+    return -1;
   struct kvm_swap k_swap;
   if (kvm_getswapinfo(kvmh, &k_swap, 1, 0) != -1) {
     (*total) = k_swap.ksw_total * page_s;
     (*used) = k_swap.ksw_used * page_s;
     (*free) = (k_swap.ksw_total - k_swap.ksw_used) * page_s;
-  }
-  kvm_close(kvmh);
+  } else
+    return -1;
+  if (kvm_close(kvmh) == -1)
+    return -1;
+  return 0;
 }
 #endif
 
@@ -470,15 +473,16 @@ void tinyswap(void) {
   }
 #endif
 #ifdef __FreeBSD__
-  long long total_swap = 0;
-  long long swap_used = 0;
-  long long swap_free = 0;
-  get_swap_stats(&total_swap, &swap_used, &swap_free);
-  double swap_total_gib = total_swap / (1024.0 * 1024.0 * 1024.0);
-  double swap_used_gib = swap_used / (1024.0 * 1024.0 * 1024.0);
-  double swap_free_gib = swap_free / (1024.0 * 1024.0 * 1024.0);
-  printf("%.2f GiB used / %.2f GiB total (%.2f GiB free)\n", swap_used_gib,
-         swap_total_gib, swap_free_gib);
+  long long total_swap = -1;
+  long long used_swap = -1;
+  long long free_swap = -1;
+  if (get_swap_stats(&total_swap, &used_swap, &free_swap) != -1) {
+    double total_swap_gib = total_swap / (1024.0 * 1024.0 * 1024.0);
+    double used_swap_gib = used_swap / (1024.0 * 1024.0 * 1024.0);
+    double free_swap_gib = free_swap / (1024.0 * 1024.0 * 1024.0);
+    printf("%.2f GiB used / %.2f GiB total (%.2f GiB free)\n", used_swap_gib,
+           total_swap_gib, free_swap_gib);
+  }
 #endif
 }
 

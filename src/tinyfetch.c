@@ -435,19 +435,17 @@ void tinycpu(void) {
 }
 
 void tinyswap(void) {
-  void tinyswap(void) {
 #ifdef __linux__
-    int total_swap = file_parser("/proc/meminfo", "SwapTotal: %d kB");
-    int swap_free = file_parser("/proc/meminfo", "SwapFree: %d kB");
-    if (total_swap != -1 && swap_free != -1) {
-      int swap_used = total_swap - swap_free;
-      double swap_total_gib = total_swap / (1024.0 * 1024.0);
-      double swap_used_gib = swap_used / (1024.0 * 1024.0);
-      double swap_free_gib = swap_free / (1024.0 * 1024.0);
-      pretext(pretext_swap);
-      printf("%.2f GiB used / %.2f GiB total (%.2f GiB free)\n", swap_used_gib,
-             swap_total_gib, swap_free_gib);
-    }
+  int total_swap = file_parser("/proc/meminfo", "SwapTotal: %d kB");
+  int swap_free = file_parser("/proc/meminfo", "SwapFree: %d kB");
+  if (total_swap != -1 && swap_free != -1) {
+    int swap_used = total_swap - swap_free;
+    double swap_total_gib = total_swap / (1024.0 * 1024.0);
+    double swap_used_gib = swap_used / (1024.0 * 1024.0);
+    double swap_free_gib = swap_free / (1024.0 * 1024.0);
+    pretext(pretext_swap);
+    printf("%.2f GiB used / %.2f GiB total (%.2f GiB free)\n", swap_used_gib,
+           swap_total_gib, swap_free_gib);
   }
 #endif
 #ifdef __FreeBSD__
@@ -503,6 +501,7 @@ void tinyfetch(void) {
   tinyram();     // get ram values
   tinyswap();    // get swap values
 }
+
 /*
         main function
 */

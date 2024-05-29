@@ -13,6 +13,3 @@ elif uname_output == 'FreeBSD'
 	link_args += ['-Os', '-lkvm']
 	executable('tinyfetch', 'src/tinyfetch.c', install : true, link_args: link_args)
 endif
-
-# Define the executable target
-

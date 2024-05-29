@@ -480,6 +480,7 @@ void tinyswap(void) {
     double total_swap_gib = total_swap / (1024.0 * 1024.0 * 1024.0);
     double used_swap_gib = used_swap / (1024.0 * 1024.0 * 1024.0);
     double free_swap_gib = free_swap / (1024.0 * 1024.0 * 1024.0);
+    pretext(pretext_swap);
     printf("%.2f GiB used / %.2f GiB total (%.2f GiB free)\n", used_swap_gib,
            total_swap_gib, free_swap_gib);
   }

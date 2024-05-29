@@ -395,11 +395,11 @@ void tinyram(void) {
 
 #ifdef __FreeBSD__
   int total_ram =
-      ull_freebsd_sysctl("vm.stats.vm.v_page_count") * sysconf(_SC_PAGESIZE);
+      int_freebsd_sysctl("vm.stats.vm.v_page_count") * sysconf(_SC_PAGESIZE);
   int free_ram =
-      ull_freebsd_sysctl("vm.stats.vm.v_free_count") * sysconf(_SC_PAGESIZE);
+      int_freebsd_sysctl("vm.stats.vm.v_free_count") * sysconf(_SC_PAGESIZE);
 
-  long long used_ram = total_ram - free_ram;
+  int used_ram = total_ram - free_ram;
   double total_ram_gib = total_ram / (1024.0 * 1024.0 * 1024.0);
   double used_ram_gib = used_ram / (1024.0 * 1024.0 * 1024.0);
   double free_ram_gib = free_ram / (1024.0 * 1024.0 * 1024.0);

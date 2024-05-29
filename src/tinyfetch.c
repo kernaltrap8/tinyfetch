@@ -453,7 +453,7 @@ void tinyswap(void) {
   struct kvm_swap
       swap_info[32]; // Assuming max 32 swap devices, adjust as necessary
 
-  kd = kvm_openfiles(NULL, NULL, NULL, NULL."kvm_getswapinfo");
+  kd = kvm_openfiles(NULL, NULL, NULL, NULL, "kvm_getswapinfo");
   if (kd == NULL) {
     perror("kvm_openfiles");
     return;

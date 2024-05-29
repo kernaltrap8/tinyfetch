@@ -15,6 +15,7 @@
 #include <sys/sysinfo.h>
 #endif
 #ifdef __FreeBSD__
+#include <fcntl.h>
 #include <kvm.h>
 #include <sys/sysctl.h>
 #include <sys/types.h>

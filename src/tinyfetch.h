@@ -3,7 +3,7 @@
         strings for tinyfetch
 */
 
-#define VERSION "4.0"
+#define VERSION "4.1a"
 #define decoration "[·]"
 #define CMDLINE_PATH "/proc/%d/cmdline"
 #define help_banner                                                            \
@@ -81,10 +81,12 @@ const char *strings[] = {
     "why did i put so many things in const char* strings[]",
     "255 lines of code!!!",
     "i can see you.",
-    "fish: Job 1, 'tinyfetch' terminated by signal SIGSEGV (Address boundary error)",
+    "fish: Job 1, 'tinyfetch' terminated by signal SIGSEGV (Address boundary "
+    "error)",
     "tinyfetch: ioctl: Inappropriate ioctl for device.",
     ":trolley:",
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor",
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod "
+    "tempor",
     "g++ tinyfetch.cpp -o tinyfetch",
     "clang tinyfetch.cpp -o tinyfetch",
     "me when rand() % 20 but i forget to seed it",

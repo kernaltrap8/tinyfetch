@@ -470,9 +470,9 @@ void tinyswap(void) {
 #ifdef __FreeBSD__
     long long total_swap = 0, long long swap_used = 0, long long swap_free = 0;
     get_swap_stats(&total_swap, &swap_used, &swap_free);
-    double swap_total_gib = total_swap / (1024.0 * 1024.0, 1024.0);
-    double swap_used_gib = swap_used / (1024.0 * 1024.0, 1024.0);
-    double swap_free_gib = swap_free / (1024.0 * 1024.0, 1024.0);
+    double swap_total_gib = total_swap / (1024.0 * 1024.0 * 1024.0);
+    double swap_used_gib = swap_used / (1024.0 * 1024.0 * 1024.0);
+    double swap_free_gib = swap_free / (1024.0 * 1024.0 * 1024.0);
     printf("%.2f GiB used / %.2f GiB total (%.2f GiB free)\n", swap_used_gib,
            swap_total_gib, swap_free_gib);
   }

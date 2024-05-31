@@ -30,6 +30,7 @@
 */
 
 int rand_enable;
+int custom_message;
 struct utsname tiny;
 
 /*

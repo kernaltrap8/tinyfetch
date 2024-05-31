@@ -279,6 +279,19 @@ void rand_string(void) {
   }
 }
 
+void message(char *message) {
+  // the syntax used for this function
+  // is weird. in the tinyfetch()
+  // function, we are passing argv[2]
+  // from main into the char *msg, which is then passed here and printed out.
+  // but this only executes if custom_message is 1, which gets modified
+  // when -m is passed into tinyfetch.
+  if (custom_message == 1) {
+    fflush(stdout);
+    printf("%s %s\n", decoration, message);
+  }
+}
+
 int get_cpu_count(void) {
 #ifdef __linux__
   return sysconf(_SC_NPROCESSORS_ONLN);
@@ -487,9 +500,10 @@ void tinyswap(void) {
 #endif
 }
 
-void tinyfetch(void) {
+void tinyfetch(char *msg) {
   tinyuser();
   rand_string();
+  message(msg);
   tinyos();
   tinydist();
   tinykern();
@@ -503,7 +517,7 @@ void tinyfetch(void) {
 
 int main(int argc, char *argv[]) {
   if (argc == 1) {
-    tinyfetch();
+    tinyfetch(NULL);
     return 0;
   }
 
@@ -519,14 +533,13 @@ int main(int argc, char *argv[]) {
         printf("no message provided.\n");
         return 1;
       }
-      fflush(stdout);
-      printf("%s %s\n", decoration, argv[2]);
-      tinyfetch();
+      custom_message = 1;
+      tinyfetch(argv[2]);
       return 0;
     } else if (!strcmp(argv[1], "-r") || !strcmp(argv[1], "--random") ||
                (!strcmp(argv[1], "-r") && !strcmp(argv[2], "--color"))) {
       rand_enable = 1;
-      tinyfetch();
+      tinyfetch(NULL);
     } else if (!strcmp(argv[1], "--color")) {
       rand_enable = 1;
       if (access("/usr/bin/lolcat", F_OK) == -1) {

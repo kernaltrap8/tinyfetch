@@ -138,6 +138,7 @@ long long longlong_freebsd_sysctl(const char *ctlname) {
 /*
         shell detection
 */
+
 #ifdef __linux__
 char *get_parent_shell(void) {
   pid_t ppid = getppid(); // get parent proc ID
@@ -208,6 +209,7 @@ char *get_parent_shell_noproc(void) {
 /*
         get uptime
 */
+
 #ifdef __linux__
 long int get_uptime(void) {
   struct sysinfo s_info; // define struct for sysinfo
@@ -276,6 +278,13 @@ void rand_string(void) {
     int n = rand() % num_strings;
     fflush(stdout);
     printf("%s %s\n", decoration, strings[n]);
+  }
+}
+
+void trim_spaces(char *str) {
+  int len = strlen(str);
+  while (len > 0 && isspace(str[len - 1])) {
+    str[--len] = '\0';
   }
 }
 
@@ -463,6 +472,7 @@ void tinycpu(void) {
 #endif
 #ifdef __FreeBSD__
   char *cpu = freebsd_sysctl("hw.model");
+  trim_spaces(cpu);
   int cpu_count = get_cpu_count();
   if (cpu != NULL) {
     printf("%s (%d)\n", cpu, cpu_count);

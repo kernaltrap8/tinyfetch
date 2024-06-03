@@ -295,7 +295,8 @@ void message(char *message) {
 int get_cpu_count(void) {
 #ifdef __linux__
   return sysconf(_SC_NPROCESSORS_ONLN);
-#else
+#endif
+#ifdef __FreeBSD__
   int cpu_count = freebsd_sysctl_int("hw.ncpu");
   return cpu_count;
 #endif

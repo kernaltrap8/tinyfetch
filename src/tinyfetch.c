@@ -3,6 +3,7 @@
 // This is free software, and you are welcome to redistribute it
 // under certain conditions
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

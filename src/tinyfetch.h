@@ -12,18 +12,15 @@
 	print this help banner\n -m or --message     \
 	add a custom message at the end of arguments\n -r or --random         add a random message before the fetch\n --color \
 	    	add some color to your fetch! requires lolcat to be installed.\n"
-#define pretext_OS "OS:         "
-#define pretext_kernel "Kernel:     "
-#define pretext_arch "Arch:       "
-#define pretext_kernver "Kernel ver: "
-#define pretext_processor "CPU:        "
-#define pretext_shell "Shell:      "
-#define pretext_ram "RAM:        "
-#define pretext_distro "Distro:     "
-#define pretext_wm "DE/WM:	    "
-#define pretext_gpu "GPU:        "
-#define pretext_uptime "Uptime:     "
-#define pretext_swap "Swap:       "
+#define pretext_OS                    "OS:         "
+#define pretext_distro                "Distro:     "
+#define pretext_kernel                "Kernel:     "
+#define pretext_shell                 "Shell:      "
+#define pretext_uptime                "Uptime:     "
+#define pretext_wm        "            DE/WM:      "
+#define pretext_processor "            CPU:        "
+#define pretext_ram       "            RAM:        "
+#define pretext_swap      "            Swap:       "
 
 /*
         environment variables
@@ -55,10 +52,6 @@ const char *strings[] = {
     "WHAT THE SIGMA",
     "deez nutz",
     "dietz nutz",
-    "guys guys did you know",
-    "that this fetch program",
-    "is written in pure C",
-    "and is faster than most fetch programs",
     "its amazing",
     "nyaa~~!! :3",
     "OwO",
@@ -109,5 +102,40 @@ const char *strings[] = {
     "aHR0cDovL3dlYi5hcmNoaXZlLm9yZy93ZWIvMjAyNDA0MTYwNDI2MzIvaHR0cDovLzB4MC5zdC"
     "9YLWtkLnR4dA==",
     "argc is a array, its index starts at 0",
-    "system(\"uname -o\")"
+    "system(\"uname -o\")",
     "Fully ported to FreeBSD!"};
+
+// ASCII art for distros
+int ascii_enable = 0;
+char *tinyascii_p1;
+char *tinyascii_p2;
+char *tinyascii_p3;
+char *tinyascii_p4;
+char *tinyascii_p5;
+
+char *a_p1 = "  __ _      ";
+char *a_p2 = " / _` |     ";
+char *a_p3 = "| (_| |     ";
+char *a_p4 = " \\__,_|     ";
+char *a_p5 = "            ";
+
+char *b_p1 = " _          ";
+char *b_p2 = "| |__       ";
+char *b_p3 = "| '_ \\      ";
+char *b_p4 = "| |_) |     ";
+char *b_p5 = "|_.__/      ";
+
+char *g_p1 = "  __ _      ";
+char *g_p2 = " / _` |     ";
+char *g_p3 = "| (_| |     ";
+char *g_p4 = " \\__, |     ";
+char *g_p5 = " |___/      ";
+
+       
+
+
+
+
+
+
+

@@ -312,6 +312,17 @@ int get_cpu_count(void) {
 #endif
 }
 
+void tinyascii(void) {
+  if (ascii_enable == 1) {
+    char *distro_name = file_parser_char("/etc/os-release",
+                                       "NAME=%s");
+    //int distro_name[] = {'B'};
+    (distro_name[0] == 'A') ? (tinyascii_p1 = a_p1, tinyascii_p2 = a_p2, tinyascii_p3 = a_p3, tinyascii_p4 = a_p4, tinyascii_p5 = a_p5) : NULL;
+    (distro_name[0] == 'B') ? (tinyascii_p1 = b_p1, tinyascii_p2 = b_p2, tinyascii_p3 = b_p3, tinyascii_p4 = b_p4, tinyascii_p5 = b_p5) : NULL;
+    (distro_name[0] == 'G') ? (tinyascii_p1 = g_p1, tinyascii_p2 = g_p2, tinyascii_p3 = g_p3, tinyascii_p4 = g_p4, tinyascii_p5 = g_p5) : NULL;
+  }
+}
+
 void tinyuser(void) {
   tinyinit();
   char *user = getenv("USER");
@@ -330,6 +341,7 @@ void tinyuser(void) {
 
 void tinyos(void) {
   tinyinit();
+  printf("%s", tinyascii_p1);
   pretext(pretext_OS);
   // tiny.sysname doesnt return what uname -o would, so here we check if it ==
   // Linux, and if it does, print GNU/ before tiny.sysname
@@ -340,7 +352,8 @@ void tinyos(void) {
 }
 
 void tinydist(void) {
-  pretext(pretext_distro);
+  printf("%s", tinyascii_p2);
+  pretext(pretext_distro);  
   char *distro_name = file_parser_char("/etc/os-release",
                                        "NAME=%s"); // parsing and isolating the
                                                    // PRETTY_NAME and VERSON_ID
@@ -358,11 +371,13 @@ void tinydist(void) {
 
 void tinykern(void) {
   tinyinit();
+  printf("%s", tinyascii_p3);
   pretext(pretext_kernel);
   fetchinfo(tiny.release); // gets kernel name
 }
 
 void tinyshell(void) {
+  printf("%s", tinyascii_p4);
   pretext(pretext_shell);
 #ifdef __linux__
   char *shell = get_parent_shell();
@@ -384,6 +399,7 @@ void tinyuptime(void) {
   if (uptime == -1) {
     ;
   } else {
+    printf("%s", tinyascii_p5);
     pretext(pretext_uptime);
     format_uptime(uptime);
   }
@@ -513,6 +529,7 @@ void tinyswap(void) {
 }
 
 void tinyfetch(char *msg) {
+  tinyascii();
   tinyuser();
   rand_string();
   message(msg);
@@ -529,6 +546,7 @@ void tinyfetch(char *msg) {
 
 int main(int argc, char *argv[]) {
   if (argc == 1) {
+    ascii_enable = 1;
     tinyfetch(NULL);
     return 0;
   }
@@ -545,14 +563,17 @@ int main(int argc, char *argv[]) {
         printf("no message provided.\n");
         return 1;
       }
+      ascii_enable = 1;
       custom_message = 1;
       tinyfetch(argv[2]);
       return 0;
     } else if (!strcmp(argv[1], "-r") || !strcmp(argv[1], "--random") ||
                (!strcmp(argv[1], "-r") && !strcmp(argv[2], "--color"))) {
+      ascii_enable = 1;
       rand_enable = 1;
       tinyfetch(NULL);
     } else if (!strcmp(argv[1], "--color")) {
+      ascii_enable = 1;
       rand_enable = 1;
       if (access("/usr/bin/lolcat", F_OK) == -1) {
         perror("access");
@@ -566,6 +587,12 @@ int main(int argc, char *argv[]) {
         printf("%s", buffer);
         (void)system(buffer);
       }
+    } else if (!strcmp(argv[1], "-d")) {
+      if (!strcmp(argv[2], "-r")) {
+        rand_enable = 1;
+        tinyfetch(NULL);
+      }
+      tinyfetch(NULL);
     } else if (!strcmp(argv[1], "-o")) {
       tinyos();
     } else if (!strcmp(argv[1], "-d")) {

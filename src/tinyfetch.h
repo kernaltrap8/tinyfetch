@@ -1,9 +1,13 @@
+// tinyfetch Copyright (C) 2024 kernaltrap8
+// This program comes with ABSOLUTELY NO WARRANTY
+// This is free software, and you are welcome to redistribute it
+// under certain conditions
 
 /*
-        strings for tinyfetch
+    tinyfetch.h
 */
 
-#define VERSION "4.1a"
+#define VERSION "5.1"
 #define decoration "[·]"
 #define CMDLINE_PATH "/proc/%d/cmdline"
 #define help_banner                                                    \
@@ -24,17 +28,12 @@
 #define pretext_swap                  "Swap:       "
 
 /*
-        environment variables
+    environment variables
 */
 
 int rand_enable;
 int custom_message;
 struct utsname tiny;
-
-/*
-        const char* strings for random string printing if -r or -ar is passed to
-   argv[]
-*/
 
 const char *strings[] = {
     "uhhhhhh",

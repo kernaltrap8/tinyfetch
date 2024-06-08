@@ -3,6 +3,10 @@
 // This is free software, and you are welcome to redistribute it
 // under certain conditions
 
+/*
+    tinyfetch.h
+*/
+
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,7 +29,7 @@
 #include "tinyascii.h"
 
 /*
-        file parsing
+    file parsing
 */
 
 int file_parser(const char *file, const char *line_to_read) {
@@ -74,7 +78,7 @@ char *file_parser_char(const char *file, const char *line_to_read) {
   return NULL;     // null exit code. if we get here, an error occurred.
 }
 /*
-        hostname handling
+    hostname handling
 */
 
 char *get_hostname(void) {
@@ -89,7 +93,7 @@ char *get_hostname(void) {
 }
 
 /*
-        FreeBSD sysctl calling
+    FreeBSD sysctl calling
 */
 
 #ifdef __FreeBSD__
@@ -138,7 +142,7 @@ long long longlong_freebsd_sysctl(const char *ctlname) {
 #endif
 
 /*
-        shell detection
+    shell detection
 */
 
 #ifdef __linux__
@@ -211,10 +215,6 @@ char *get_parent_shell_noproc(void) {
 }
 #endif
 
-/*
-        get uptime
-*/
-
 #ifdef __linux__
 long int get_uptime(void) {
   struct sysinfo s_info; // define struct for sysinfo
@@ -260,7 +260,7 @@ void format_uptime(long int uptime) {
 }
 
 /*
-        main printing functions
+    main printing functions
 */
 
 void pretext(const char *string) {
@@ -339,21 +339,21 @@ int get_swap_stats(long long *total, long long *used, long long *free) {
 }
 #endif
 
-void tinyascii(void) {
+void tinyascii() {
   if (ascii_enable == 1) {
-    char *distro_name = file_parser_char("/etc/os-release",
-                                       "PRETTY_NAME=\"%s\"");
-    //int distro_name[] = {'e'};
+    char *distro_name = file_parser_char("/etc/os-release", "PRETTY_NAME=\"%s\"");
+    //int distro_name[] = {''};
     if (distro_name != NULL) {
-      (distro_name[0] == 'A' || distro_name[0] == 'a') ? (tinyascii_p1 = a_p1, tinyascii_p2 = a_p2, tinyascii_p3 = a_p3, tinyascii_p4 = a_p4, tinyascii_p5 = a_p5) : NULL;
-      (distro_name[0] == 'B' || distro_name[0] == 'b') ? (tinyascii_p1 = b_p1, tinyascii_p2 = b_p2, tinyascii_p3 = b_p3, tinyascii_p4 = b_p4, tinyascii_p5 = b_p5) : NULL;
-      (distro_name[0] == 'C' || distro_name[0] == 'c') ? (tinyascii_p1 = c_p1, tinyascii_p2 = c_p2, tinyascii_p3 = c_p3, tinyascii_p4 = c_p4, tinyascii_p5 = c_p5) : NULL;
-      (distro_name[0] == 'D' || distro_name[0] == 'd') ? (tinyascii_p1 = d_p1, tinyascii_p2 = d_p2, tinyascii_p3 = d_p3, tinyascii_p4 = d_p4, tinyascii_p5 = d_p5) : NULL;
-      (distro_name[0] == 'E' || distro_name[0] == 'e') ? (tinyascii_p1 = e_p1, tinyascii_p2 = e_p2, tinyascii_p3 = e_p3, tinyascii_p4 = e_p4, tinyascii_p5 = e_p5) : NULL;
-      (distro_name[0] == 'F' || distro_name[0] == 'f') ? (tinyascii_p1 = f_p1, tinyascii_p2 = f_p2, tinyascii_p3 = f_p3, tinyascii_p4 = f_p4, tinyascii_p5 = f_p5) : NULL;
-      (distro_name[0] == 'G' || distro_name[0] == 'g') ? (tinyascii_p1 = g_p1, tinyascii_p2 = g_p2, tinyascii_p3 = g_p3, tinyascii_p4 = g_p4, tinyascii_p5 = g_p5) : NULL;
+      (distro_name[0] == 'A' || distro_name[0] == 'a') ? (tinyascii_p1 = a_p1, tinyascii_p2 = a_p2, tinyascii_p3 = a_p3, tinyascii_p4 = a_p4, tinyascii_p5 = a_p5, tinyascii_p6 = a_p6, tinyascii_p7 = a_p7, tinyascii_p8 = a_p8, tinyascii_p9 = a_p9) : NULL;
+      (distro_name[0] == 'B' || distro_name[0] == 'b') ? (tinyascii_p1 = b_p1, tinyascii_p2 = b_p2, tinyascii_p3 = b_p3, tinyascii_p4 = b_p4, tinyascii_p5 = b_p5, tinyascii_p6 = b_p6, tinyascii_p7 = b_p7, tinyascii_p8 = b_p8, tinyascii_p9 = b_p9) : NULL;
+      (distro_name[0] == 'C' || distro_name[0] == 'c') ? (tinyascii_p1 = c_p1, tinyascii_p2 = c_p2, tinyascii_p3 = c_p3, tinyascii_p4 = c_p4, tinyascii_p5 = c_p5, tinyascii_p6 = c_p6, tinyascii_p7 = c_p7, tinyascii_p8 = c_p8, tinyascii_p9 = c_p9) : NULL;
+      (distro_name[0] == 'D' || distro_name[0] == 'd') ? (tinyascii_p1 = d_p1, tinyascii_p2 = d_p2, tinyascii_p3 = d_p3, tinyascii_p4 = d_p4, tinyascii_p5 = d_p5, tinyascii_p6 = d_p6, tinyascii_p7 = d_p7, tinyascii_p8 = d_p8, tinyascii_p9 = d_p9) : NULL;
+      (distro_name[0] == 'E' || distro_name[0] == 'e') ? (tinyascii_p1 = e_p1, tinyascii_p2 = e_p2, tinyascii_p3 = e_p3, tinyascii_p4 = e_p4, tinyascii_p5 = e_p5, tinyascii_p6 = e_p6, tinyascii_p7 = e_p7, tinyascii_p8 = e_p8, tinyascii_p9 = e_p9) : NULL;
+      (distro_name[0] == 'F' || distro_name[0] == 'f') ? (tinyascii_p1 = f_p1, tinyascii_p2 = f_p2, tinyascii_p3 = f_p3, tinyascii_p4 = f_p4, tinyascii_p5 = f_p5, tinyascii_p6 = f_p6, tinyascii_p7 = f_p7, tinyascii_p8 = f_p8, tinyascii_p9 = f_p9) : NULL;
+      (distro_name[0] == 'G' || distro_name[0] == 'g') ? (tinyascii_p1 = g_p1, tinyascii_p2 = g_p2, tinyascii_p3 = g_p3, tinyascii_p4 = g_p4, tinyascii_p5 = g_p5, tinyascii_p6 = g_p6, tinyascii_p7 = g_p7, tinyascii_p8 = g_p8, tinyascii_p9 = g_p9) : NULL;
+      (distro_name[0] == 'H' || distro_name[0] == 'h') ? (tinyascii_p1 = h_p1, tinyascii_p2 = h_p2, tinyascii_p3 = h_p3, tinyascii_p4 = h_p4, tinyascii_p5 = h_p5, tinyascii_p6 = h_p6, tinyascii_p7 = h_p7, tinyascii_p8 = h_p8, tinyascii_p9 = h_p9) : NULL;
     }
-    free(distro_name);
+    free(distro_name); 
   }
 }
 
@@ -451,7 +451,7 @@ void tinywm(void) {
   char *wm = getenv("XDG_CURRENT_DESKTOP");
   if (wm != NULL) {
     if (ascii_enable == 1) {
-      printf("            ");
+      printf("%s", tinyascii_p6);
     }
     pretext(pretext_wm);
     printf("%s\n", wm); // wm variable taken from getenv()
@@ -460,7 +460,11 @@ void tinywm(void) {
 
 void tinyram(void) {
   if (ascii_enable == 1) {
-    printf("            ");
+    char *wm = getenv("XDG_CURRENT_DESKTOP");
+    if (wm == NULL) {
+      printf("%s", tinyascii_p6);
+    }
+    printf("%s", tinyascii_p7);
   }
   pretext(pretext_ram);
 #ifdef __linux__
@@ -499,7 +503,7 @@ void tinyram(void) {
 void tinycpu(void) {
   tinyinit();
   if (ascii_enable == 1) {
-    printf("            ");
+    printf("%s", tinyascii_p8);
   }
   pretext(pretext_processor);
 #ifdef __linux__
@@ -528,7 +532,7 @@ void tinycpu(void) {
 
 void tinyswap(void) {
   if (ascii_enable == 1) {
-    printf("            ");
+    printf("%s", tinyascii_p9);
   }
   pretext(pretext_swap);
 #ifdef __linux__
@@ -576,7 +580,7 @@ void tinyfetch(char *msg) {
 int isValidArgument(char *arg) {
     const char* validArgs[] = {
         "-v", "-h", "-m", "-r", "-o", "-d", "-k", "-s", "-u", "-w",
-        "--ram", "-c", "--swap", "--genie", "--disable-ascii", "--user"
+        "--ram", "-c", "--swap", "--genie", "--disable-ascii", "--user", "--custom-ascii"
     };
     size_t numArgs = sizeof(validArgs) / sizeof(validArgs[0]);
     for (size_t i = 0; i < numArgs; ++i) {

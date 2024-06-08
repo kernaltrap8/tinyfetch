@@ -317,9 +317,9 @@ int get_cpu_count(void) {
 
 void tinyascii(void) {
   if (ascii_enable == 1) {
-    //char *distro_name = file_parser_char("/etc/os-release",
-    //                                   "NAME=%s");
-    int distro_name[] = {'F'};
+    char *distro_name = file_parser_char("/etc/os-release",
+                                       "PRETTY_NAME=\"%s\"");
+    //int distro_name[] = {'F'};
     (distro_name[0] == 'A') ? (tinyascii_p1 = a_p1, tinyascii_p2 = a_p2, tinyascii_p3 = a_p3, tinyascii_p4 = a_p4, tinyascii_p5 = a_p5) : NULL;
     (distro_name[0] == 'B') ? (tinyascii_p1 = b_p1, tinyascii_p2 = b_p2, tinyascii_p3 = b_p3, tinyascii_p4 = b_p4, tinyascii_p5 = b_p5) : NULL;
     (distro_name[0] == 'F') ? (tinyascii_p1 = f_p1, tinyascii_p2 = f_p2, tinyascii_p3 = f_p3, tinyascii_p4 = f_p4, tinyascii_p5 = f_p5) : NULL;

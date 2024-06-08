@@ -6,12 +6,13 @@
 #define VERSION "4.1a"
 #define decoration "[·]"
 #define CMDLINE_PATH "/proc/%d/cmdline"
-#define help_banner                                                            \
-  "tinyfetch help\n -v or --version     \
-	print the installed version of tinyfetch\n -h or --help        \
+#define help_banner                                                    \
+  "tinyfetch help\n -v or --version\
+        print the installed version of tinyfetch\n -h or --help        \
 	print this help banner\n -m or --message     \
-	add a custom message at the end of arguments\n -r or --random         add a random message before the fetch\n --color \
-	    	add some color to your fetch! requires lolcat to be installed.\n"
+	add a custom message at the end of arguments\n \
+-r or --random         add a random message before the fetch\n\
+ --disable-ascii        disable ascii art"
 #define pretext_OS                    "OS:         "
 #define pretext_distro                "Distro:     "
 #define pretext_kernel                "Kernel:     "
@@ -104,44 +105,3 @@ const char *strings[] = {
     "argc is a array, its index starts at 0",
     "system(\"uname -o\")",
     "Fully ported to FreeBSD!"};
-
-// ASCII art for distros
-int ascii_enable = 0;
-char *tinyascii_p1;
-char *tinyascii_p2;
-char *tinyascii_p3;
-char *tinyascii_p4;
-char *tinyascii_p5;
-
-char *a_p1 = "  __ _      ";
-char *a_p2 = " / _` |     ";
-char *a_p3 = "| (_| |     ";
-char *a_p4 = " \\__,_|     ";
-char *a_p5 = "            ";
-
-char *b_p1 = " _          ";
-char *b_p2 = "| |__       ";
-char *b_p3 = "| '_ \\      ";
-char *b_p4 = "| |_) |     ";
-char *b_p5 = "|_.__/      ";
-
-char *f_p1 = "  __        ";
-char *f_p2 = " / _|       ";
-char *f_p3 = "| |_        ";
-char *f_p4 = "|  _|       ";
-char *f_p5 = "|_|         ";
-
-char *g_p1 = "  __ _      ";
-char *g_p2 = " / _` |     ";
-char *g_p3 = "| (_| |     ";
-char *g_p4 = " \\__, |     ";
-char *g_p5 = " |___/      ";
-
-       
-
-
-
-
-
-
-

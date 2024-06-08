@@ -22,6 +22,7 @@
 #include <sys/types.h>
 #endif
 #include "tinyfetch.h"
+#include "tinyascii.h"
 
 /*
         file parsing
@@ -342,12 +343,15 @@ void tinyascii(void) {
   if (ascii_enable == 1) {
     char *distro_name = file_parser_char("/etc/os-release",
                                        "PRETTY_NAME=\"%s\"");
-    //int distro_name[] = {'F'};
+    //int distro_name[] = {'e'};
     if (distro_name != NULL) {
-      (distro_name[0] == 'A') ? (tinyascii_p1 = a_p1, tinyascii_p2 = a_p2, tinyascii_p3 = a_p3, tinyascii_p4 = a_p4, tinyascii_p5 = a_p5) : NULL;
-      (distro_name[0] == 'B') ? (tinyascii_p1 = b_p1, tinyascii_p2 = b_p2, tinyascii_p3 = b_p3, tinyascii_p4 = b_p4, tinyascii_p5 = b_p5) : NULL;
-      (distro_name[0] == 'F') ? (tinyascii_p1 = f_p1, tinyascii_p2 = f_p2, tinyascii_p3 = f_p3, tinyascii_p4 = f_p4, tinyascii_p5 = f_p5) : NULL;
-      (distro_name[0] == 'G') ? (tinyascii_p1 = g_p1, tinyascii_p2 = g_p2, tinyascii_p3 = g_p3, tinyascii_p4 = g_p4, tinyascii_p5 = g_p5) : NULL;
+      (distro_name[0] == 'A' || distro_name[0] == 'a') ? (tinyascii_p1 = a_p1, tinyascii_p2 = a_p2, tinyascii_p3 = a_p3, tinyascii_p4 = a_p4, tinyascii_p5 = a_p5) : NULL;
+      (distro_name[0] == 'B' || distro_name[0] == 'b') ? (tinyascii_p1 = b_p1, tinyascii_p2 = b_p2, tinyascii_p3 = b_p3, tinyascii_p4 = b_p4, tinyascii_p5 = b_p5) : NULL;
+      (distro_name[0] == 'C' || distro_name[0] == 'c') ? (tinyascii_p1 = c_p1, tinyascii_p2 = c_p2, tinyascii_p3 = c_p3, tinyascii_p4 = c_p4, tinyascii_p5 = c_p5) : NULL;
+      (distro_name[0] == 'D' || distro_name[0] == 'd') ? (tinyascii_p1 = d_p1, tinyascii_p2 = d_p2, tinyascii_p3 = d_p3, tinyascii_p4 = d_p4, tinyascii_p5 = d_p5) : NULL;
+      (distro_name[0] == 'E' || distro_name[0] == 'e') ? (tinyascii_p1 = e_p1, tinyascii_p2 = e_p2, tinyascii_p3 = e_p3, tinyascii_p4 = e_p4, tinyascii_p5 = e_p5) : NULL;
+      (distro_name[0] == 'F' || distro_name[0] == 'f') ? (tinyascii_p1 = f_p1, tinyascii_p2 = f_p2, tinyascii_p3 = f_p3, tinyascii_p4 = f_p4, tinyascii_p5 = f_p5) : NULL;
+      (distro_name[0] == 'G' || distro_name[0] == 'g') ? (tinyascii_p1 = g_p1, tinyascii_p2 = g_p2, tinyascii_p3 = g_p3, tinyascii_p4 = g_p4, tinyascii_p5 = g_p5) : NULL;
     }
     free(distro_name);
   }
@@ -569,6 +573,20 @@ void tinyfetch(char *msg) {
   tinyswap();
 }
 
+int isValidArgument(char *arg) {
+    const char* validArgs[] = {
+        "-v", "-h", "-m", "-r", "-o", "-d", "-k", "-s", "-u", "-w",
+        "--ram", "-c", "--swap", "--genie", "--disable-ascii", "--user"
+    };
+    size_t numArgs = sizeof(validArgs) / sizeof(validArgs[0]);
+    for (size_t i = 0; i < numArgs; ++i) {
+        if (strcmp(arg, validArgs[i]) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 int main(int argc, char *argv[]) {
   if (argc == 1) {
     ascii_enable = 1;
@@ -577,29 +595,13 @@ int main(int argc, char *argv[]) {
   }
 
   if (argc > 1) {
-    if (!strcmp(argv[1], "-da") && argc == 2) {
+    if (!strcmp(argv[1], "--disable-ascii") && argc == 2) {
       // If only "-d" is passed, print basic system information
       tinyfetch(NULL);
-    } else if (!strcmp(argv[1], "-da") && !strcmp(argv[2], "-r")) {
+    } else if (!strcmp(argv[1], "--disable-ascii") && !strcmp(argv[2], "-r")) {
       // If both "-d" and "-r" are passed, enable random string printing
       rand_enable = 1;
       tinyfetch(NULL);
-    }
-    if (!strcmp(argv[1], "-r") && !strcmp(argv[2], "--color")) {
-      ascii_enable = 1;
-      rand_enable = 1;
-      if (access("/usr/bin/lolcat", F_OK) == -1) {
-        perror("access");
-        printf("lolcat is not installed! cannot print using colors.\n");
-        return 1;
-      } else {
-        char buffer[256];
-        strncpy(buffer, argv[0], sizeof(buffer) - 1);
-        buffer[sizeof(buffer) - 1] = '\0';
-        strcat(buffer, " | lolcat");
-        (void)system(buffer);
-        return 0;
-      }
     }
     if (!strcmp(argv[1], "-v") || !strcmp(argv[1], "--version")) {
       printf("%s v%s\n", argv[0], VERSION);
@@ -620,19 +622,6 @@ int main(int argc, char *argv[]) {
       ascii_enable = 1;
       rand_enable = 1;
       tinyfetch(NULL);
-    } else if (!strcmp(argv[1], "--color")) {
-      if (access("/usr/bin/lolcat", F_OK) == -1) {
-        perror("access");
-        printf("lolcat is not installed! cannot print using colors.\n");
-        return 1;
-      } else {
-        char buffer[256];
-        strncpy(buffer, argv[0], sizeof(buffer) - 1);
-        buffer[sizeof(buffer) - 1] = '\0';
-        strcat(buffer, " | lolcat");
-        (void)system(buffer);
-        return 0;
-      }
     } else if (!strcmp(argv[1], "-o")) {
       tinyos();
     } else if (!strcmp(argv[1], "-d")) {
@@ -657,16 +646,24 @@ int main(int argc, char *argv[]) {
     } else if (!strcmp(argv[1], "--user")) {
       tinyuser();
     }
-    int isInvalid = (strcmp(argv[1], "-v") && strcmp(argv[1], "-h") && strcmp(argv[1], "-m") && strcmp(argv[1], "-r")
-     && strcmp(argv[1], "-o") && strcmp(argv[1], "-d") && strcmp(argv[1], "-k") && strcmp(argv[1], "-s") && strcmp(argv[1], "-u") && strcmp(argv[1], "-w") && strcmp(argv[1], "--ram")
-      && strcmp(argv[1], "-c") && strcmp(argv[1], "--swap") && strcmp(argv[1], "--genie") && strcmp(argv[1], "-da")
-       && strcmp(argv[1], "--user")) ? 1 : 0;
 
-    if (isInvalid) {
-      printf("tinyfetch: Unknown command line argument.\n %s %s", decoration,
-             help_banner);
-      return 1;
+    if (argc == 2) {
+      if (!isValidArgument(argv[1])) {
+        printf("tinyfetch: Unknown command line argument.\n %s %s", decoration,
+              help_banner);
+        return 1;
+      } 
+    } else if (argc == 3) {
+      if (!isValidArgument(argv[2])) {
+        printf("tinyfetch: Unknown command line argument.\n %s %s", decoration,
+              help_banner);
+        return 1;
+      }
     }
+
+  } else {
+    printf("tinyfetch: Unknown command line argument.\n %s %s", decoration,
+          help_banner);
   }
   return 0;
 }

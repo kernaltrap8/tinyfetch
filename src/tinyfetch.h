@@ -125,6 +125,12 @@ char *b_p3 = "| '_ \\      ";
 char *b_p4 = "| |_) |     ";
 char *b_p5 = "|_.__/      ";
 
+char *f_p1 = "  __        ";
+char *f_p2 = " / _|       ";
+char *f_p3 = "| |_        ";
+char *f_p4 = "|  _|       ";
+char *f_p5 = "|_|         ";
+
 char *g_p1 = "  __ _      ";
 char *g_p2 = " / _` |     ";
 char *g_p3 = "| (_| |     ";

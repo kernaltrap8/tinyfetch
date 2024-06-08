@@ -177,6 +177,9 @@ char *get_parent_shell(void) {
       !strncmp(cmdline, "/usr/local/bin", 15)) {
     return strdup(cmdline + ((cmdline[1] == 'u') ? 15 : 5));
   }
+  if (!strncmp(cmdline, "/usr/bin/", 9)) {
+    return strdup(cmdline + 9);
+  }
 
   return strdup(cmdline); // return the contents of cmdline
 }
@@ -360,9 +363,12 @@ void tinydist(void) {
                                                    // PRETTY_NAME and VERSON_ID
   char *distro_ver =
       file_parser_char("/etc/os-release", "VERSION_ID=\"%[^\"]\"%*c");
-  if (!strcmp(distro_name, "(null)") && !strcmp(distro_ver, "(null)")) {
+  if (!strcmp(distro_name, "(null)") || !strcmp(distro_ver, "(null)")) {
     distro_name = "UNIX-Like OS";
     distro_ver = " ";
+  }
+  if (!strcmp(distro_ver, "(null)")) {
+    distro_ver = "";
   }
   tinyinit();
   printf("%s %s %s \n", distro_name, distro_ver, tiny.machine);

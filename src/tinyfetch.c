@@ -315,111 +315,6 @@ int get_cpu_count(void) {
 #endif
 }
 
-void tinyascii(void) {
-  if (ascii_enable == 1) {
-    char *distro_name = file_parser_char("/etc/os-release",
-                                       "PRETTY_NAME=\"%s\"");
-    //int distro_name[] = {'F'};
-    (distro_name[0] == 'A') ? (tinyascii_p1 = a_p1, tinyascii_p2 = a_p2, tinyascii_p3 = a_p3, tinyascii_p4 = a_p4, tinyascii_p5 = a_p5) : NULL;
-    (distro_name[0] == 'B') ? (tinyascii_p1 = b_p1, tinyascii_p2 = b_p2, tinyascii_p3 = b_p3, tinyascii_p4 = b_p4, tinyascii_p5 = b_p5) : NULL;
-    (distro_name[0] == 'F') ? (tinyascii_p1 = f_p1, tinyascii_p2 = f_p2, tinyascii_p3 = f_p3, tinyascii_p4 = f_p4, tinyascii_p5 = f_p5) : NULL;
-    (distro_name[0] == 'G') ? (tinyascii_p1 = g_p1, tinyascii_p2 = g_p2, tinyascii_p3 = g_p3, tinyascii_p4 = g_p4, tinyascii_p5 = g_p5) : NULL;
-  }
-}
-
-void tinyuser(void) {
-  tinyinit();
-  char *user = getenv("USER");
-  printf("%s@", user); // username@, username is taken from char* user
-  if (user != NULL) {
-    int total_length = strlen(user) + strlen(tiny.nodename) + 1;
-    printf("%s\n", tiny.nodename);
-    for (int i = 0; i < total_length; i++) {
-      printf("-");
-    }
-    printf("\n");
-  } else {
-    perror("strlen");
-  }
-}
-
-void tinyos(void) {
-  tinyinit();
-  printf("%s", tinyascii_p1);
-  pretext(pretext_OS);
-  // tiny.sysname doesnt return what uname -o would, so here we check if it ==
-  // Linux, and if it does, print GNU/ before tiny.sysname
-  if (!strcmp(tiny.sysname, "Linux")) {
-    printf("GNU/");
-  }
-  fetchinfo(tiny.sysname); // OS name
-}
-
-void tinydist(void) {
-  printf("%s", tinyascii_p2);
-  pretext(pretext_distro);  
-  char *distro_name = file_parser_char("/etc/os-release",
-                                       "NAME=%s"); // parsing and isolating the
-                                                   // PRETTY_NAME and VERSON_ID
-  char *distro_ver =
-      file_parser_char("/etc/os-release", "VERSION_ID=\"%[^\"]\"%*c");
-  if (!strcmp(distro_name, "(null)") || !strcmp(distro_ver, "(null)")) {
-    distro_name = "UNIX-Like OS";
-    distro_ver = " ";
-  }
-  if (!strcmp(distro_ver, "(null)")) {
-    distro_ver = "";
-  }
-  tinyinit();
-  printf("%s %s %s \n", distro_name, distro_ver, tiny.machine);
-  free(distro_name);
-  free(distro_ver);
-}
-
-void tinykern(void) {
-  tinyinit();
-  printf("%s", tinyascii_p3);
-  pretext(pretext_kernel);
-  fetchinfo(tiny.release); // gets kernel name
-}
-
-void tinyshell(void) {
-  printf("%s", tinyascii_p4);
-  pretext(pretext_shell);
-#ifdef __linux__
-  char *shell = get_parent_shell();
-#endif
-#ifdef __FreeBSD__
-  char *shell = get_parent_shell_noproc();
-#endif
-  printf("%s\n", shell);
-  free(shell);
-}
-
-void tinyuptime(void) {
-#ifdef __linux__
-  long int uptime = get_uptime();
-#endif
-#ifdef __FreeBSD__
-  long int uptime = get_uptime_freebsd();
-#endif
-  if (uptime == -1) {
-    ;
-  } else {
-    printf("%s", tinyascii_p5);
-    pretext(pretext_uptime);
-    format_uptime(uptime);
-  }
-}
-
-void tinywm(void) {
-  char *wm = getenv("XDG_CURRENT_DESKTOP");
-  if (wm != NULL) {
-    pretext(pretext_wm);
-    printf("%s\n", wm); // wm variable taken from getenv()
-  }
-}
-
 #ifdef __FreeBSD__
 int get_swap_stats(long long *total, long long *used, long long *free) {
   (*total) = -1;
@@ -443,7 +338,127 @@ int get_swap_stats(long long *total, long long *used, long long *free) {
 }
 #endif
 
+void tinyascii(void) {
+  if (ascii_enable == 1) {
+    char *distro_name = file_parser_char("/etc/os-release",
+                                       "PRETTY_NAME=\"%s\"");
+    //int distro_name[] = {'F'};
+    if (distro_name != NULL) {
+      (distro_name[0] == 'A') ? (tinyascii_p1 = a_p1, tinyascii_p2 = a_p2, tinyascii_p3 = a_p3, tinyascii_p4 = a_p4, tinyascii_p5 = a_p5) : NULL;
+      (distro_name[0] == 'B') ? (tinyascii_p1 = b_p1, tinyascii_p2 = b_p2, tinyascii_p3 = b_p3, tinyascii_p4 = b_p4, tinyascii_p5 = b_p5) : NULL;
+      (distro_name[0] == 'F') ? (tinyascii_p1 = f_p1, tinyascii_p2 = f_p2, tinyascii_p3 = f_p3, tinyascii_p4 = f_p4, tinyascii_p5 = f_p5) : NULL;
+      (distro_name[0] == 'G') ? (tinyascii_p1 = g_p1, tinyascii_p2 = g_p2, tinyascii_p3 = g_p3, tinyascii_p4 = g_p4, tinyascii_p5 = g_p5) : NULL;
+    }
+    free(distro_name);
+  }
+}
+
+void tinyuser(void) {
+  tinyinit();
+  char *user = getenv("USER");
+  printf("%s@", user); // username@, username is taken from char* user
+  if (user != NULL) {
+    int total_length = strlen(user) + strlen(tiny.nodename) + 1;
+    printf("%s\n", tiny.nodename);
+    for (int i = 0; i < total_length; i++) {
+      printf("-");
+    }
+    printf("\n");
+  } else {
+    perror("strlen");
+  }
+}
+
+void tinyos(void) {
+  tinyinit();
+  if (ascii_enable == 1)
+    printf("%s", tinyascii_p1);
+  pretext(pretext_OS);
+  // tiny.sysname doesnt return what uname -o would, so here we check if it ==
+  // Linux, and if it does, print GNU/ before tiny.sysname
+  if (!strcmp(tiny.sysname, "Linux")) {
+    printf("GNU/");
+  }
+  fetchinfo(tiny.sysname); // OS name
+}
+
+void tinydist(void) {
+  if (ascii_enable == 1)
+    printf("%s", tinyascii_p2);
+  pretext(pretext_distro);  
+  char *distro_name = file_parser_char("/etc/os-release",
+                                       "NAME=%s"); // parsing and isolating the
+                                                   // PRETTY_NAME and VERSON_ID
+  char *distro_ver =
+      file_parser_char("/etc/os-release", "VERSION_ID=\"%[^\"]\"%*c");
+  if (!strcmp(distro_name, "(null)") || !strcmp(distro_ver, "(null)")) {
+    distro_name = "UNIX-Like OS";
+    distro_ver = " ";
+  }
+  if (!strcmp(distro_ver, "(null)")) {
+    distro_ver = "";
+  }
+  tinyinit();
+  printf("%s %s %s \n", distro_name, distro_ver, tiny.machine);
+  free(distro_name);
+  free(distro_ver);
+}
+
+void tinykern(void) {
+  tinyinit();
+  if (ascii_enable == 1)
+   printf("%s", tinyascii_p3);
+  pretext(pretext_kernel);
+  fetchinfo(tiny.release); // gets kernel name
+}
+
+void tinyshell(void) {
+  if (ascii_enable == 1)
+   printf("%s", tinyascii_p4);
+  pretext(pretext_shell);
+#ifdef __linux__
+  char *shell = get_parent_shell();
+#endif
+#ifdef __FreeBSD__
+  char *shell = get_parent_shell_noproc();
+#endif
+  printf("%s\n", shell);
+  free(shell);
+}
+
+void tinyuptime(void) {
+#ifdef __linux__
+  long int uptime = get_uptime();
+#endif
+#ifdef __FreeBSD__
+  long int uptime = get_uptime_freebsd();
+#endif
+  if (uptime == -1) {
+    ;
+  } else {
+    if (ascii_enable == 1)
+     printf("%s", tinyascii_p5);
+    pretext(pretext_uptime);
+    format_uptime(uptime);
+  }
+}
+
+void tinywm(void) {
+  char *wm = getenv("XDG_CURRENT_DESKTOP");
+  if (wm != NULL) {
+    if (ascii_enable == 1) {
+      printf("            ");
+    }
+    pretext(pretext_wm);
+    printf("%s\n", wm); // wm variable taken from getenv()
+  }
+}
+
 void tinyram(void) {
+  if (ascii_enable == 1) {
+    printf("            ");
+  }
+  pretext(pretext_ram);
 #ifdef __linux__
   // process memory used and total avail.
   int memavail = file_parser("/proc/meminfo", "MemAvailable: %d kB");
@@ -459,7 +474,6 @@ void tinyram(void) {
     double total_ram_gib = total_ram / (1024.0 * 1024.0);
     double ram_used_gib = ram_used / (1024.0 * 1024.0);
     double ram_free_gib = ram_free / (1024.0 * 1024.0);
-    pretext(pretext_ram);
     printf("%.2f GiB used / %.2f GiB total (%.2f GiB free)\n", ram_used_gib,
            total_ram_gib, ram_free_gib);
   }
@@ -473,7 +487,6 @@ void tinyram(void) {
   double total_ram_gib = total_ram / (1024.0 * 1024.0 * 1024.0);
   double used_ram_gib = used_ram / (1024.0 * 1024.0 * 1024.0);
   double free_ram_gib = free_ram / (1024.0 * 1024.0 * 1024.0);
-  pretext(pretext_ram);
   printf("%.2f GiB used / %.2f GiB total (%.2f GiB free)\n", used_ram_gib,
          total_ram_gib, free_ram_gib);
 #endif
@@ -481,6 +494,9 @@ void tinyram(void) {
 
 void tinycpu(void) {
   tinyinit();
+  if (ascii_enable == 1) {
+    printf("            ");
+  }
   pretext(pretext_processor);
 #ifdef __linux__
   char *cpu = file_parser_char("/proc/cpuinfo", "model name      : %[^\n]");
@@ -507,6 +523,10 @@ void tinycpu(void) {
 }
 
 void tinyswap(void) {
+  if (ascii_enable == 1) {
+    printf("            ");
+  }
+  pretext(pretext_swap);
 #ifdef __linux__
   int total_swap = file_parser("/proc/meminfo", "SwapTotal: %d kB");
   int swap_free = file_parser("/proc/meminfo", "SwapFree: %d kB");
@@ -515,7 +535,6 @@ void tinyswap(void) {
     double swap_total_gib = total_swap / (1024.0 * 1024.0);
     double swap_used_gib = swap_used / (1024.0 * 1024.0);
     double swap_free_gib = swap_free / (1024.0 * 1024.0);
-    pretext(pretext_swap);
     printf("%.2f GiB used / %.2f GiB total (%.2f GiB free)\n", swap_used_gib,
            swap_total_gib, swap_free_gib);
   }
@@ -528,7 +547,6 @@ void tinyswap(void) {
     double total_swap_gib = total_swap / (1024.0 * 1024.0 * 1024.0);
     double used_swap_gib = used_swap / (1024.0 * 1024.0 * 1024.0);
     double free_swap_gib = free_swap / (1024.0 * 1024.0 * 1024.0);
-    pretext(pretext_swap);
     printf("%.2f GiB used / %.2f GiB total (%.2f GiB free)\n", used_swap_gib,
            total_swap_gib, free_swap_gib);
   }
@@ -559,6 +577,30 @@ int main(int argc, char *argv[]) {
   }
 
   if (argc > 1) {
+    if (!strcmp(argv[1], "-da") && argc == 2) {
+      // If only "-d" is passed, print basic system information
+      tinyfetch(NULL);
+    } else if (!strcmp(argv[1], "-da") && !strcmp(argv[2], "-r")) {
+      // If both "-d" and "-r" are passed, enable random string printing
+      rand_enable = 1;
+      tinyfetch(NULL);
+    }
+    if (!strcmp(argv[1], "-r") && !strcmp(argv[2], "--color")) {
+      ascii_enable = 1;
+      rand_enable = 1;
+      if (access("/usr/bin/lolcat", F_OK) == -1) {
+        perror("access");
+        printf("lolcat is not installed! cannot print using colors.\n");
+        return 1;
+      } else {
+        char buffer[256];
+        strncpy(buffer, argv[0], sizeof(buffer) - 1);
+        buffer[sizeof(buffer) - 1] = '\0';
+        strcat(buffer, " | lolcat");
+        (void)system(buffer);
+        return 0;
+      }
+    }
     if (!strcmp(argv[1], "-v") || !strcmp(argv[1], "--version")) {
       printf("%s v%s\n", argv[0], VERSION);
       return 0;
@@ -574,14 +616,11 @@ int main(int argc, char *argv[]) {
       custom_message = 1;
       tinyfetch(argv[2]);
       return 0;
-    } else if (!strcmp(argv[1], "-r") || !strcmp(argv[1], "--random") ||
-               (!strcmp(argv[1], "-r") && !strcmp(argv[2], "--color"))) {
+    } else if (!strcmp(argv[1], "-r") || !strcmp(argv[1], "--random")) {
       ascii_enable = 1;
       rand_enable = 1;
       tinyfetch(NULL);
     } else if (!strcmp(argv[1], "--color")) {
-      ascii_enable = 1;
-      rand_enable = 1;
       if (access("/usr/bin/lolcat", F_OK) == -1) {
         perror("access");
         printf("lolcat is not installed! cannot print using colors.\n");
@@ -591,15 +630,9 @@ int main(int argc, char *argv[]) {
         strncpy(buffer, argv[0], sizeof(buffer) - 1);
         buffer[sizeof(buffer) - 1] = '\0';
         strcat(buffer, " | lolcat");
-        printf("%s", buffer);
         (void)system(buffer);
+        return 0;
       }
-    } else if (!strcmp(argv[1], "-d")) {
-      if (!strcmp(argv[2], "-r")) {
-        rand_enable = 1;
-        tinyfetch(NULL);
-      }
-      tinyfetch(NULL);
     } else if (!strcmp(argv[1], "-o")) {
       tinyos();
     } else if (!strcmp(argv[1], "-d")) {
@@ -609,12 +642,7 @@ int main(int argc, char *argv[]) {
     } else if (!strcmp(argv[1], "-s")) {
       tinyshell();
     } else if (!strcmp(argv[1], "-u")) {
-#ifdef __linux__
       tinyuptime();
-#endif
-#ifndef __linux__
-      printf("Incompatible operating system!\n");
-#endif
     } else if (!strcmp(argv[1], "-w")) {
       tinywm();
     } else if (!strcmp(argv[1], "--ram")) {
@@ -628,12 +656,17 @@ int main(int argc, char *argv[]) {
       rand_string();
     } else if (!strcmp(argv[1], "--user")) {
       tinyuser();
-    } else {
+    }
+    int isInvalid = (strcmp(argv[1], "-v") && strcmp(argv[1], "-h") && strcmp(argv[1], "-m") && strcmp(argv[1], "-r")
+     && strcmp(argv[1], "-o") && strcmp(argv[1], "-d") && strcmp(argv[1], "-k") && strcmp(argv[1], "-s") && strcmp(argv[1], "-u") && strcmp(argv[1], "-w") && strcmp(argv[1], "--ram")
+      && strcmp(argv[1], "-c") && strcmp(argv[1], "--swap") && strcmp(argv[1], "--genie") && strcmp(argv[1], "-da")
+       && strcmp(argv[1], "--user")) ? 1 : 0;
+
+    if (isInvalid) {
       printf("tinyfetch: Unknown command line argument.\n %s %s", decoration,
              help_banner);
       return 1;
     }
   }
-
   return 0;
 }

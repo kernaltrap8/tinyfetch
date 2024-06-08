@@ -17,10 +17,10 @@
 #define pretext_kernel                "Kernel:     "
 #define pretext_shell                 "Shell:      "
 #define pretext_uptime                "Uptime:     "
-#define pretext_wm        "            DE/WM:      "
-#define pretext_processor "            CPU:        "
-#define pretext_ram       "            RAM:        "
-#define pretext_swap      "            Swap:       "
+#define pretext_wm                    "DE/WM:      "
+#define pretext_processor             "CPU:        "
+#define pretext_ram                   "RAM:        "
+#define pretext_swap                  "Swap:       "
 
 /*
         environment variables

@@ -319,7 +319,7 @@ void tinyascii(void) {
     //int distro_name[] = {'B'};
     (distro_name[0] == 'A') ? (tinyascii_p1 = a_p1, tinyascii_p2 = a_p2, tinyascii_p3 = a_p3, tinyascii_p4 = a_p4, tinyascii_p5 = a_p5) : NULL;
     (distro_name[0] == 'B') ? (tinyascii_p1 = b_p1, tinyascii_p2 = b_p2, tinyascii_p3 = b_p3, tinyascii_p4 = b_p4, tinyascii_p5 = b_p5) : NULL;
-    (distro_name[0] == 'B') ? (tinyascii_p1 = f_p1, tinyascii_p2 = b_p2, tinyascii_p3 = f_p3, tinyascii_p4 = f_p4, tinyascii_p5 = f_p5) : NULL;
+    (distro_name[0] == 'F') ? (tinyascii_p1 = f_p1, tinyascii_p2 = b_p2, tinyascii_p3 = f_p3, tinyascii_p4 = f_p4, tinyascii_p5 = f_p5) : NULL;
     (distro_name[0] == 'G') ? (tinyascii_p1 = g_p1, tinyascii_p2 = g_p2, tinyascii_p3 = g_p3, tinyascii_p4 = g_p4, tinyascii_p5 = g_p5) : NULL;
   }
 }

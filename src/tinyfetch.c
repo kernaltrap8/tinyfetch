@@ -495,7 +495,7 @@ void tinyram(void) {
   if (ascii_enable == 1) {
     char *wm = getenv("XDG_CURRENT_DESKTOP");
     if (wm == NULL) {
-      return;
+      ;
     }
     printf("%s", tinyascii_p7);
   }

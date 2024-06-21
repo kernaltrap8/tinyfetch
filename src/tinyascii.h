@@ -100,3 +100,33 @@ char *h_p6 = "            ";
 char *h_p7 = "            ";
 char *h_p8 = "            ";
 char *h_p9 = "            ";
+
+char *i_p1 = " _          ";
+char *i_p2 = "(_)         ";
+char *i_p3 = "| |         ";
+char *i_p4 = "| |         ";
+char *i_p5 = "|_|         ";
+char *i_p6 = "            ";
+char *i_p7 = "            ";
+char *i_p8 = "            ";
+char *i_p9 = "            ";
+
+char *j_p1 = "   _        ";
+char *j_p2 = "  (_)       ";
+char *j_p3 = "  | |       ";
+char *j_p4 = "  | |       ";
+char *j_p5 = " _/ |       ";
+char *j_p6 = "|__/        ";
+char *j_p7 = "            ";
+char *j_p8 = "            ";
+char *j_p9 = "            ";
+
+char *k_p1 = " _          ";
+char *k_p2 = "| | __      ";
+char *k_p3 = "| |/ /      ";
+char *k_p4 = "|   <       ";
+char *k_p5 = "|_|\\_\\      ";
+char *k_p6 = "            ";
+char *k_p7 = "            ";
+char *k_p8 = "            ";
+char *k_p9 = "            ";

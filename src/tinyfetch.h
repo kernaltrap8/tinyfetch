@@ -7,25 +7,26 @@
     tinyfetch.h
 */
 
-#define VERSION "5.1"
+#define VERSION "5.2"
 #define decoration "[·]"
 #define CMDLINE_PATH "/proc/%d/cmdline"
-#define help_banner                                                    \
+#define help_banner                                                            \
   "tinyfetch help\n -v or --version\
         print the installed version of tinyfetch\n -h or --help        \
 	print this help banner\n -m or --message     \
 	add a custom message at the end of arguments\n \
 -r or --random         add a random message before the fetch\n\
  --disable-ascii        disable ascii art"
-#define pretext_OS                    "OS:         "
-#define pretext_distro                "Distro:     "
-#define pretext_kernel                "Kernel:     "
-#define pretext_shell                 "Shell:      "
-#define pretext_uptime                "Uptime:     "
-#define pretext_wm                    "DE/WM:      "
-#define pretext_processor             "CPU:        "
-#define pretext_ram                   "RAM:        "
-#define pretext_swap                  "Swap:       "
+#define pretext_OS "OS:         "
+#define pretext_distro "Distro:     "
+#define pretext_kernel "Kernel:     "
+#define pretext_shell "Shell:      "
+#define pretext_uptime "Uptime:     "
+#define pretext_wm "DE/WM:      "
+#define pretext_processor "CPU:        "
+#define pretext_gpu "GPU:        "
+#define pretext_ram "RAM:        "
+#define pretext_swap "Swap:       "
 
 /*
     environment variables

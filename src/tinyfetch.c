@@ -6,8 +6,8 @@
 /*
     tinyfetch.c
 */
-
 #include <ctype.h>
+#include <pci/pci.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -260,6 +260,37 @@ void format_uptime(long int uptime) {
 }
 
 /*
+        GPU detection
+*/
+
+char *get_gpu_name() {
+  struct pci_access *pacc;
+  struct pci_dev *dev;
+  char namebuf[1024], *name;
+
+  pacc = pci_alloc();
+  pci_init(pacc);
+  pci_scan_bus(pacc);
+
+  for (dev = pacc->devices; dev; dev = dev->next) {
+    pci_fill_info(dev, PCI_FILL_IDENT | PCI_FILL_BASES | PCI_FILL_CLASS);
+    if ((dev->device_class == PCI_CLASS_DISPLAY_VGA) ||
+        (dev->device_class == PCI_CLASS_DISPLAY_3D)) {
+
+      name = pci_lookup_name(pacc, namebuf, sizeof(namebuf), PCI_LOOKUP_DEVICE,
+                             dev->vendor_id, dev->device_id);
+      if (!name) {
+        return NULL;
+      } else {
+        pci_cleanup(pacc);
+        return strdup(name);
+      }
+    }
+  }
+  return 0;
+}
+
+/*
     main printing functions
 */
 
@@ -343,49 +374,63 @@ void tinyascii(void) {
   if (ascii_enable == 1) {
     char *distro_name =
         file_parser_char("/etc/os-release", "PRETTY_NAME=\"%s\"");
-    // int distro_name[] = {'F'};
-    if (distro_name != NULL) {
-      (distro_name[0] == 'A' || distro_name[0] == 'a')
-          ? (tinyascii_p1 = a_p1, tinyascii_p2 = a_p2, tinyascii_p3 = a_p3,
-             tinyascii_p4 = a_p4, tinyascii_p5 = a_p5, tinyascii_p6 = a_p6,
-             tinyascii_p7 = a_p7, tinyascii_p8 = a_p8, tinyascii_p9 = a_p9)
-          : NULL;
-      (distro_name[0] == 'B' || distro_name[0] == 'b')
-          ? (tinyascii_p1 = b_p1, tinyascii_p2 = b_p2, tinyascii_p3 = b_p3,
-             tinyascii_p4 = b_p4, tinyascii_p5 = b_p5, tinyascii_p6 = b_p6,
-             tinyascii_p7 = b_p7, tinyascii_p8 = b_p8, tinyascii_p9 = b_p9)
-          : NULL;
-      (distro_name[0] == 'C' || distro_name[0] == 'c')
-          ? (tinyascii_p1 = c_p1, tinyascii_p2 = c_p2, tinyascii_p3 = c_p3,
-             tinyascii_p4 = c_p4, tinyascii_p5 = c_p5, tinyascii_p6 = c_p6,
-             tinyascii_p7 = c_p7, tinyascii_p8 = c_p8, tinyascii_p9 = c_p9)
-          : NULL;
-      (distro_name[0] == 'D' || distro_name[0] == 'd')
-          ? (tinyascii_p1 = d_p1, tinyascii_p2 = d_p2, tinyascii_p3 = d_p3,
-             tinyascii_p4 = d_p4, tinyascii_p5 = d_p5, tinyascii_p6 = d_p6,
-             tinyascii_p7 = d_p7, tinyascii_p8 = d_p8, tinyascii_p9 = d_p9)
-          : NULL;
-      (distro_name[0] == 'E' || distro_name[0] == 'e')
-          ? (tinyascii_p1 = e_p1, tinyascii_p2 = e_p2, tinyascii_p3 = e_p3,
-             tinyascii_p4 = e_p4, tinyascii_p5 = e_p5, tinyascii_p6 = e_p6,
-             tinyascii_p7 = e_p7, tinyascii_p8 = e_p8, tinyascii_p9 = e_p9)
-          : NULL;
-      (distro_name[0] == 'F' || distro_name[0] == 'f')
-          ? (tinyascii_p1 = f_p1, tinyascii_p2 = f_p2, tinyascii_p3 = f_p3,
-             tinyascii_p4 = f_p4, tinyascii_p5 = f_p5, tinyascii_p6 = f_p6,
-             tinyascii_p7 = f_p7, tinyascii_p8 = f_p8, tinyascii_p9 = f_p9)
-          : NULL;
-      (distro_name[0] == 'G' || distro_name[0] == 'g')
-          ? (tinyascii_p1 = g_p1, tinyascii_p2 = g_p2, tinyascii_p3 = g_p3,
-             tinyascii_p4 = g_p4, tinyascii_p5 = g_p5, tinyascii_p6 = g_p6,
-             tinyascii_p7 = g_p7, tinyascii_p8 = g_p8, tinyascii_p9 = g_p9)
-          : NULL;
-      (distro_name[0] == 'H' || distro_name[0] == 'h')
-          ? (tinyascii_p1 = h_p1, tinyascii_p2 = h_p2, tinyascii_p3 = h_p3,
-             tinyascii_p4 = h_p4, tinyascii_p5 = h_p5, tinyascii_p6 = h_p6,
-             tinyascii_p7 = h_p7, tinyascii_p8 = h_p8, tinyascii_p9 = h_p9)
-          : NULL;
-    }
+    // int distro_name[] = {'k'};
+    (distro_name[0] == 'A' || distro_name[0] == 'a')
+        ? (tinyascii_p1 = a_p1, tinyascii_p2 = a_p2, tinyascii_p3 = a_p3,
+           tinyascii_p4 = a_p4, tinyascii_p5 = a_p5, tinyascii_p6 = a_p6,
+           tinyascii_p7 = a_p7, tinyascii_p8 = a_p8, tinyascii_p9 = a_p9)
+        : NULL;
+    (distro_name[0] == 'B' || distro_name[0] == 'b')
+        ? (tinyascii_p1 = b_p1, tinyascii_p2 = b_p2, tinyascii_p3 = b_p3,
+           tinyascii_p4 = b_p4, tinyascii_p5 = b_p5, tinyascii_p6 = b_p6,
+           tinyascii_p7 = b_p7, tinyascii_p8 = b_p8, tinyascii_p9 = b_p9)
+        : NULL;
+    (distro_name[0] == 'C' || distro_name[0] == 'c')
+        ? (tinyascii_p1 = c_p1, tinyascii_p2 = c_p2, tinyascii_p3 = c_p3,
+           tinyascii_p4 = c_p4, tinyascii_p5 = c_p5, tinyascii_p6 = c_p6,
+           tinyascii_p7 = c_p7, tinyascii_p8 = c_p8, tinyascii_p9 = c_p9)
+        : NULL;
+    (distro_name[0] == 'D' || distro_name[0] == 'd')
+        ? (tinyascii_p1 = d_p1, tinyascii_p2 = d_p2, tinyascii_p3 = d_p3,
+           tinyascii_p4 = d_p4, tinyascii_p5 = d_p5, tinyascii_p6 = d_p6,
+           tinyascii_p7 = d_p7, tinyascii_p8 = d_p8, tinyascii_p9 = d_p9)
+        : NULL;
+    (distro_name[0] == 'E' || distro_name[0] == 'e')
+        ? (tinyascii_p1 = e_p1, tinyascii_p2 = e_p2, tinyascii_p3 = e_p3,
+           tinyascii_p4 = e_p4, tinyascii_p5 = e_p5, tinyascii_p6 = e_p6,
+           tinyascii_p7 = e_p7, tinyascii_p8 = e_p8, tinyascii_p9 = e_p9)
+        : NULL;
+    (distro_name[0] == 'F' || distro_name[0] == 'f')
+        ? (tinyascii_p1 = f_p1, tinyascii_p2 = f_p2, tinyascii_p3 = f_p3,
+           tinyascii_p4 = f_p4, tinyascii_p5 = f_p5, tinyascii_p6 = f_p6,
+           tinyascii_p7 = f_p7, tinyascii_p8 = f_p8, tinyascii_p9 = f_p9)
+        : NULL;
+    (distro_name[0] == 'G' || distro_name[0] == 'g')
+        ? (tinyascii_p1 = g_p1, tinyascii_p2 = g_p2, tinyascii_p3 = g_p3,
+           tinyascii_p4 = g_p4, tinyascii_p5 = g_p5, tinyascii_p6 = g_p6,
+           tinyascii_p7 = g_p7, tinyascii_p8 = g_p8, tinyascii_p9 = g_p9)
+        : NULL;
+    (distro_name[0] == 'H' || distro_name[0] == 'h')
+        ? (tinyascii_p1 = h_p1, tinyascii_p2 = h_p2, tinyascii_p3 = h_p3,
+           tinyascii_p4 = h_p4, tinyascii_p5 = h_p5, tinyascii_p6 = h_p6,
+           tinyascii_p7 = h_p7, tinyascii_p8 = h_p8, tinyascii_p9 = h_p9)
+        : NULL;
+    (distro_name[0] == 'I' || distro_name[0] == 'i')
+        ? (tinyascii_p1 = i_p1, tinyascii_p2 = i_p2, tinyascii_p3 = i_p3,
+           tinyascii_p4 = i_p4, tinyascii_p5 = i_p5, tinyascii_p6 = i_p6,
+           tinyascii_p7 = i_p7, tinyascii_p8 = i_p8, tinyascii_p9 = i_p9)
+        : NULL;
+    (distro_name[0] == 'J' || distro_name[0] == 'j')
+        ? (tinyascii_p1 = j_p1, tinyascii_p2 = j_p2, tinyascii_p3 = j_p3,
+           tinyascii_p4 = j_p4, tinyascii_p5 = j_p5, tinyascii_p6 = j_p6,
+           tinyascii_p7 = j_p7, tinyascii_p8 = j_p8, tinyascii_p9 = j_p9)
+        : NULL;
+    (distro_name[0] == 'K' || distro_name[0] == 'k')
+        ? (tinyascii_p1 = k_p1, tinyascii_p2 = k_p2, tinyascii_p3 = k_p3,
+           tinyascii_p4 = k_p4, tinyascii_p5 = k_p5, tinyascii_p6 = k_p6,
+           tinyascii_p7 = k_p7, tinyascii_p8 = k_p8, tinyascii_p9 = k_p9)
+        : NULL;
+
     free(distro_name);
   }
 }
@@ -563,6 +608,16 @@ void tinycpu(void) {
 #endif
 }
 
+void tinygpu(void) {
+  if (get_gpu_name() != NULL) {
+    if (ascii_enable == 1) {
+      printf("%s", tinyascii_p9);
+    }
+    pretext(pretext_gpu);
+    printf("%s\n", get_gpu_name());
+  }
+}
+
 void tinyswap(void) {
   if (ascii_enable == 1) {
     printf("%s", tinyascii_p9);
@@ -606,6 +661,7 @@ void tinyfetch(char *msg) {
   tinyuptime();
   tinywm();
   tinycpu();
+  tinygpu();
   tinyram();
   tinyswap();
 }

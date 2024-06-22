@@ -28,7 +28,7 @@
 #include "tinyascii.h"
 #include "tinyfetch.h"
 
-#define PCI_DETECTION 1
+#define PCI_DETECTION 0
 
 #if PCI_DETECTION == 1
 #include <pci/pci.h>

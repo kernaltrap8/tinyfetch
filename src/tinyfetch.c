@@ -6,8 +6,8 @@
 /*
     tinyfetch.c
 */
+
 #include <ctype.h>
-#include <pci/pci.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -27,6 +27,12 @@
 #endif
 #include "tinyascii.h"
 #include "tinyfetch.h"
+
+#define PCI_DETECTION 1
+
+#if PCI_DETECTION == 1
+#include <pci/pci.h>
+#endif
 
 /*
     file parsing
@@ -263,6 +269,7 @@ void format_uptime(long int uptime) {
         GPU detection
 */
 
+#if PCI_DETECTION == 1
 char *get_gpu_name() {
   struct pci_access *pacc;
   struct pci_dev *dev;
@@ -289,6 +296,7 @@ char *get_gpu_name() {
   }
   return 0;
 }
+#endif
 
 /*
     main printing functions
@@ -609,6 +617,7 @@ void tinycpu(void) {
 }
 
 void tinygpu(void) {
+#if PCI_DETECTION == 1
   if (get_gpu_name() != NULL) {
     if (ascii_enable == 1) {
       printf("%s", tinyascii_p9);
@@ -616,6 +625,7 @@ void tinygpu(void) {
     pretext(pretext_gpu);
     printf("%s\n", get_gpu_name());
   }
+#endif
 }
 
 void tinyswap(void) {

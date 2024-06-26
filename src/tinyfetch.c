@@ -25,7 +25,7 @@
 #include <sys/sysctl.h>
 #include <sys/types.h>
 #endif
-#include "../build/config.h"
+#include "config.h"
 #include "tinyascii.h"
 #include "tinyfetch.h"
 

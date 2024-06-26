@@ -25,10 +25,9 @@
 #include <sys/sysctl.h>
 #include <sys/types.h>
 #endif
+#include "../build/config.h"
 #include "tinyascii.h"
 #include "tinyfetch.h"
-
-#define PCI_DETECTION 0
 
 #if PCI_DETECTION == 1
 #include <pci/pci.h>
@@ -83,6 +82,7 @@ char *file_parser_char(const char *file, const char *line_to_read) {
   fclose(meminfo); // close the file
   return NULL;     // null exit code. if we get here, an error occurred.
 }
+
 /*
     hostname handling
 */

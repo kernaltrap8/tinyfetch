@@ -21,5 +21,6 @@ if uname_output == 'Linux'
 elif uname_output == 'FreeBSD'
   c_args += ['-Os']
   link_args += ['-lkvm']
-  executable('tinyfetch', 'src/tinyfetch.c', install : true, c_args: c_args, link_args: link_args)
+  inc_dirs = include_directories('/usr/local/include')
+  executable('tinyfetch', 'src/tinyfetch.c', install : true, c_args: c_args, link_args: link_args, include_directories: inc_dirs)
 endif

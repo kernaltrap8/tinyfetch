@@ -38,34 +38,52 @@
 */
 
 int file_parser(const char *file, const char *line_to_read) {
-  FILE *meminfo = fopen(file, "r"); // open the file to parse
+  FILE *meminfo = fopen(file, "r");
   if (meminfo == NULL) {
-    return -1; // return an error code if the file doesnt exist
+    return -1;
   }
 
-  char line[256]; // char buffer
+  char line[256];
   while (fgets(line, sizeof(line), meminfo)) {
-    int ram; // int data type to store the memory info in to print
+    int ram;
     if (sscanf(line, line_to_read, &ram) == 1) {
-      fclose(meminfo); // close the file
-      return ram;      // return the contents
+      fclose(meminfo);
+      return ram;
     }
   }
 
-  fclose(meminfo); // close the file
-  return -1;       // negative exit code. if we get here, an error occurred.
+  fclose(meminfo);
+  return -1;
+}
+
+double file_parser_double(const char *file, const char *line_to_read) {
+  FILE *meminfo = fopen(file, "r");
+  if (meminfo == NULL) {
+    return -1;
+  }
+
+  char line[256];
+  while (fgets(line, sizeof(line), meminfo)) {
+    double ram;
+    if (sscanf(line, line_to_read, &ram) == 1) {
+      fclose(meminfo);
+      return ram;
+    }
+  }
+
+  fclose(meminfo);
+  return -1;
 }
 
 char *file_parser_char(const char *file, const char *line_to_read) {
-  FILE *meminfo = fopen(file, "r"); // open the file to parse
+  FILE *meminfo = fopen(file, "r");
   if (meminfo == NULL) {
-    return NULL; // return an error code if the file doesnt exist
+    return NULL;
   }
 
-  char line[256]; // char buffer
+  char line[256];
   while (fgets(line, sizeof(line), meminfo)) {
-    char *parsed_string =
-        (char *)malloc(strlen(line) + 1); // allocate memory for the string
+    char *parsed_string = (char *)malloc(strlen(line) + 1);
     if (!parsed_string) {
       fclose(meminfo);
       return NULL;
@@ -79,8 +97,8 @@ char *file_parser_char(const char *file, const char *line_to_read) {
     free(parsed_string);
   }
 
-  fclose(meminfo); // close the file
-  return NULL;     // null exit code. if we get here, an error occurred.
+  fclose(meminfo);
+  return NULL;
 }
 
 /*
@@ -594,10 +612,13 @@ void tinycpu(void) {
   pretext(pretext_processor);
 #ifdef __linux__
   char *cpu = file_parser_char("/proc/cpuinfo", "model name      : %[^\n]");
-  char *cpu_fallback = file_parser_char("/proc/cpuinfo", "cpu      : %[^\n]");
+  char *cpu_fallback = file_parser_char("/proc/cpuinfo", "cpu      : %.2f");
+  double cpu_freq =
+      file_parser_double("/proc/cpuinfo", "cpu MHz		: %lf");
+  double formatted_freq = cpu_freq / 1000;
   int cpu_count = get_cpu_count();
   if (cpu != NULL) {
-    printf("%s (%d)\n", cpu, cpu_count);
+    printf("%s (%d) @ %.2fGHz\n", cpu, cpu_count, formatted_freq);
     free(cpu);
   } else if (cpu_fallback != NULL) {
     printf("%s (%d)\n", cpu_fallback, cpu_count);
@@ -606,10 +627,11 @@ void tinycpu(void) {
 #endif
 #ifdef __FreeBSD__
   char *cpu = freebsd_sysctl("hw.model");
+  char *cpu_freq = freebsd_sysctl("dev.cpu.0.freq");
   trim_spaces(cpu);
   int cpu_count = get_cpu_count();
   if (cpu != NULL) {
-    printf("%s (%d)\n", cpu, cpu_count);
+    printf("%s (%d) @ %sGHz\n", cpu, cpu_count, cpu_freq);
   } else {
     printf("Unknown %s CPU (%d)\n", tiny.machine, cpu_count);
   }

@@ -30,16 +30,7 @@
 #include "tinyfetch.h"
 
 #if PCI_DETECTION == 1
-#ifdef __linux__
 #include <pci/pci.h>
-#endif
-#ifdef __FreeBSD__
-#include "/usr/local/include/pci/config.h"
-#include "/usr/local/include/pci/header.h"
-#include "/usr/local/include/pci/pci.h"
-#include "/usr/local/include/pci/types.h"
-
-#endif
 #endif
 
 /*

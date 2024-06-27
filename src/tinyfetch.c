@@ -627,11 +627,10 @@ void tinycpu(void) {
 #endif
 #ifdef __FreeBSD__
   char *cpu = freebsd_sysctl("hw.model");
-  char *cpu_freq = freebsd_sysctl("dev.cpu.0.freq");
   trim_spaces(cpu);
   int cpu_count = get_cpu_count();
   if (cpu != NULL) {
-    printf("%s (%d) @ %sGHz\n", cpu, cpu_count, cpu_freq);
+    printf("%s (%d)\n", cpu, cpu_count);
   } else {
     printf("Unknown %s CPU (%d)\n", tiny.machine, cpu_count);
   }

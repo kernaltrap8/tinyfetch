@@ -23,7 +23,7 @@ elif uname_output == 'FreeBSD'
   config_h = configuration_data()
   pci_dep = dependency('libpci', required: false)
   if pci_dep.found()
-    link_args += ['-L/usr/local/lib' '-lpci']
+    link_args += ['-L/usr/local/lib', '-lpci']
     config_h.set('PCI_DETECTION', 1)
   else
    config_h.set('PCI_DETECTION', 0)

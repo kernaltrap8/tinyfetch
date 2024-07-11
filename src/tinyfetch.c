@@ -28,6 +28,7 @@
 #include "config.h"
 #include "tinyascii.h"
 #include "tinyfetch.h"
+#include <limits.h>
 
 #if PCI_DETECTION == 1
 #include <pci/pci.h>
@@ -38,7 +39,12 @@
 */
 
 int file_parser(const char *file, const char *line_to_read) {
-  FILE *meminfo = fopen(file, "r");
+  char resolved_path[PATH_MAX];
+  if (realpath(file, resolved_path) == NULL) {
+    return -1;
+  }
+
+  FILE *meminfo = fopen(resolved_path, "r");
   if (meminfo == NULL) {
     return -1;
   }
@@ -57,7 +63,12 @@ int file_parser(const char *file, const char *line_to_read) {
 }
 
 double file_parser_double(const char *file, const char *line_to_read) {
-  FILE *meminfo = fopen(file, "r");
+  char resolved_path[PATH_MAX];
+  if (realpath(file, resolved_path) == NULL) {
+    return -1;
+  }
+
+  FILE *meminfo = fopen(resolved_path, "r");
   if (meminfo == NULL) {
     return -1;
   }
@@ -76,7 +87,12 @@ double file_parser_double(const char *file, const char *line_to_read) {
 }
 
 char *file_parser_char(const char *file, const char *line_to_read) {
-  FILE *meminfo = fopen(file, "r");
+  char resolved_path[PATH_MAX];
+  if (realpath(file, resolved_path) == NULL) {
+    return NULL;
+  }
+
+  FILE *meminfo = fopen(resolved_path, "r");
   if (meminfo == NULL) {
     return NULL;
   }
@@ -273,14 +289,21 @@ long int get_uptime_freebsd(void) {
 #endif
 
 void format_uptime(long int uptime) {
-  int hours, minutes, seconds;
+  int days, hours, minutes, seconds;
 
+  days = uptime / 86400;
+  uptime %= 86400;
   hours = uptime / 3600;
   uptime %= 3600;
   minutes = uptime / 60;
   seconds = uptime % 60;
 
-  printf("%d hours, %d minutes, %d seconds\n", hours, minutes, seconds);
+  if (days > 0) {
+    printf("%d day%s, %d hours, %d minutes, %d seconds\n", days,
+           days > 1 ? "s" : "", hours, minutes, seconds);
+  } else {
+    printf("%d hours, %d minutes, %d seconds\n", hours, minutes, seconds);
+  }
 }
 
 /*
@@ -612,7 +635,7 @@ void tinycpu(void) {
   pretext(pretext_processor);
 #ifdef __linux__
   char *cpu = file_parser_char("/proc/cpuinfo", "model name      : %[^\n]");
-  char *cpu_fallback = file_parser_char("/proc/cpuinfo", "cpu      : %.2f");
+  char *cpu_fallback = file_parser_char("/proc/cpuinfo", "cpu      : %[^\n]");
   double cpu_freq =
       file_parser_double("/proc/cpuinfo", "cpu MHz		: %lf");
   double formatted_freq = cpu_freq / 1000;

@@ -8,6 +8,7 @@
 */
 
 #include <ctype.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,7 +29,6 @@
 #include "config.h"
 #include "tinyascii.h"
 #include "tinyfetch.h"
-#include <limits.h>
 
 #if PCI_DETECTION == 1
 #include <pci/pci.h>

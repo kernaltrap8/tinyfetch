@@ -298,12 +298,31 @@ void format_uptime(long int uptime) {
   minutes = uptime / 60;
   seconds = uptime % 60;
 
+  int first = 1; // To handle the comma placement correctly
+
   if (days > 0) {
-    printf("%d day%s, %d hours, %d minutes, %d seconds\n", days,
-           days > 1 ? "s" : "", hours, minutes, seconds);
-  } else {
-    printf("%d hours, %d minutes, %d seconds\n", hours, minutes, seconds);
+    printf("%d day%s", days, days > 1 ? "s" : "");
+    first = 0;
   }
+  if (hours > 0) {
+    if (!first)
+      printf(", ");
+    printf("%d hour%s", hours, hours > 1 ? "s" : "");
+    first = 0;
+  }
+  if (minutes > 0) {
+    if (!first)
+      printf(", ");
+    printf("%d minute%s", minutes, minutes > 1 ? "s" : "");
+    first = 0;
+  }
+  if (seconds > 0) {
+    if (!first)
+      printf(", ");
+    printf("%d second%s", seconds, seconds > 1 ? "s" : "");
+  }
+
+  printf("\n");
 }
 
 /*

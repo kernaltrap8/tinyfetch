@@ -545,7 +545,11 @@ void tinydist(void) {
     distro_name = "Generic Linux";
   }
   if (distro_ver == NULL) {
-    distro_ver = "";
+    tinyinit();
+    printf("%s %s \n", distro_name, tiny.machine);
+    free(distro_name);
+    free(distro_ver);
+    return;
   }
   tinyinit();
   printf("%s %s %s \n", distro_name, distro_ver, tiny.machine);

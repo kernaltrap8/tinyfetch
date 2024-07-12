@@ -105,3 +105,67 @@ const char *strings[] = {
     "argc is a array, its index starts at 0",
     "system(\"uname -o\")",
     "Fully ported to FreeBSD!"};
+/*
+        function protypes
+*/
+
+// file parsing
+int file_parser(const char *file, const char *line_to_read);
+double file_parser_double(const char *file, const char *line_to_read);
+char *file_parser_char(const char *file, const char *line_to_read);
+
+// hostname handling
+char *get_hostname(void);
+
+// FreeBSD sysctl calling
+#ifdef __FreeBSD__
+char *freebsd_sysctl(char *ctlname);
+int freebsd_sysctl_int(const char *ctlname);
+long long longlong_freebsd_sysctl(const char *ctlname);
+#endif
+
+// shell detection
+#ifdef __linux__
+char *get_parent_shell(void);
+#endif
+#ifdef __FreeBSD__
+char *get_parent_shell_noproc(void);
+#endif
+
+// uptime detection
+#ifdef __linux__
+long int get_uptime(void);
+#endif
+#ifdef __FreeBSD__
+long int get_uptime_freebsd(void);
+#endif
+void format_uptime(long int uptime);
+
+// GPU detection
+#if PCI_DETECTION == 1
+char *get_gpu_name(void);
+#endif
+
+// main printing functions
+void pretext(const char *string);
+void fetchinfo(char *structname);
+void tinyinit(void);
+void rand_string(void);
+void trim_spaces(char *str);
+void message(char *message);
+int get_swap_status(void);
+int get_cpu_count(void);
+#ifdef __FreeBSD__
+int get_swap_stats(long long *total, long long *used, long long *free);
+#endif
+
+// tinyfetch printing functions
+void tinyascii(void);
+void tinyuser(void);
+void tinyos(void);
+void tinydist(void);
+void tinykern(void);
+void tinyshell(void);
+void tinyuptime(void);
+void tinywm(void);
+void tinyram(void);

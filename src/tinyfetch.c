@@ -41,11 +41,13 @@
 int file_parser(const char *file, const char *line_to_read) {
   char resolved_path[PATH_MAX];
   if (realpath(file, resolved_path) == NULL) {
+    perror("realpath");
     return -1;
   }
 
   FILE *meminfo = fopen(resolved_path, "r");
   if (meminfo == NULL) {
+    perror("fopen");
     return -1;
   }
 
@@ -65,12 +67,14 @@ int file_parser(const char *file, const char *line_to_read) {
 double file_parser_double(const char *file, const char *line_to_read) {
   char resolved_path[PATH_MAX];
   if (realpath(file, resolved_path) == NULL) {
-    return -1;
+    perror("realpath");
+    return -1.0;
   }
 
   FILE *meminfo = fopen(resolved_path, "r");
   if (meminfo == NULL) {
-    return -1;
+    perror("fopen");
+    return -1.0;
   }
 
   char line[256];
@@ -83,24 +87,28 @@ double file_parser_double(const char *file, const char *line_to_read) {
   }
 
   fclose(meminfo);
-  return -1;
+  return -1.0;
 }
 
 char *file_parser_char(const char *file, const char *line_to_read) {
   char resolved_path[PATH_MAX];
   if (realpath(file, resolved_path) == NULL) {
+    perror("realpath");
     return NULL;
   }
 
   FILE *meminfo = fopen(resolved_path, "r");
   if (meminfo == NULL) {
+    perror("fopen");
     return NULL;
   }
 
   char line[256];
+  char *parsed_string = NULL;
   while (fgets(line, sizeof(line), meminfo)) {
-    char *parsed_string = (char *)malloc(strlen(line) + 1);
+    parsed_string = (char *)malloc(strlen(line) + 1);
     if (!parsed_string) {
+      perror("malloc");
       fclose(meminfo);
       return NULL;
     }
@@ -405,6 +413,29 @@ void message(char *message) {
   }
 }
 
+int get_swap_status() {
+#ifdef __linux__
+  struct sysinfo info;
+  if (sysinfo(&info) != 0) {
+    perror("sysinfo");
+    return -1;
+  }
+  if (info.totalswap == 0) {
+    return 0; // No swap available
+  }
+#endif
+#ifdef __FreeBSD__
+  long long total, used, free;
+  if (get_swap_stats(&total, &used, &free) != 0) {
+    return -1; // Error in fetching swap stats
+  }
+  if (total == 0) {
+    return 0; // No swap available
+  }
+#endif
+  return 1; // Swap available
+}
+
 int get_cpu_count(void) {
 #ifdef __linux__
   return sysconf(_SC_NPROCESSORS_ONLN);
@@ -442,6 +473,8 @@ void tinyascii(void) {
   if (ascii_enable == 1) {
     char *distro_name =
         file_parser_char("/etc/os-release", "PRETTY_NAME=\"%s\"");
+    if (distro_name == NULL)
+      distro_name = "L"; // generic Linux ascii
     // int distro_name[] = {'k'};
     (distro_name[0] == 'A' || distro_name[0] == 'a')
         ? (tinyascii_p1 = a_p1, tinyascii_p2 = a_p2, tinyascii_p3 = a_p3,
@@ -505,7 +538,11 @@ void tinyascii(void) {
 
 void tinyuser(void) {
   tinyinit();
-  char *user = getenv("USER");
+  // char *user = getenv("USER");
+  char *buf;
+  buf = (char *)malloc(10 * sizeof(char));
+  buf = getlogin();
+  char *user = buf;
   printf("%s@", user); // username@, username is taken from char* user
   if (user != NULL) {
     int total_length = strlen(user) + strlen(tiny.nodename) + 1;
@@ -695,6 +732,9 @@ void tinygpu(void) {
 }
 
 void tinyswap(void) {
+  if (get_swap_status() != 1) {
+    return;
+  }
   if (ascii_enable == 1) {
     printf("%s", tinyascii_p9);
   }
@@ -702,7 +742,7 @@ void tinyswap(void) {
 #ifdef __linux__
   int total_swap = file_parser("/proc/meminfo", "SwapTotal: %d kB");
   int swap_free = file_parser("/proc/meminfo", "SwapFree: %d kB");
-  if (total_swap != -1 && swap_free != -1) {
+  if (total_swap != 0 && swap_free != 0) {
     int swap_used = total_swap - swap_free;
     double swap_total_gib = total_swap / (1024.0 * 1024.0);
     double swap_used_gib = swap_used / (1024.0 * 1024.0);

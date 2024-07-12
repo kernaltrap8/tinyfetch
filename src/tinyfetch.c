@@ -541,11 +541,10 @@ void tinydist(void) {
                                                    // PRETTY_NAME and VERSON_ID
   char *distro_ver =
       file_parser_char("/etc/os-release", "VERSION_ID=\"%[^\"]\"%*c");
-  if (!strcmp(distro_name, "(null)") || !strcmp(distro_ver, "(null)")) {
-    distro_name = "UNIX-Like OS";
-    distro_ver = " ";
+  if (distro_name == NULL) {
+    distro_name = "Generic Linux";
   }
-  if (!strcmp(distro_ver, "(null)")) {
+  if (distro_ver == NULL) {
     distro_ver = "";
   }
   tinyinit();

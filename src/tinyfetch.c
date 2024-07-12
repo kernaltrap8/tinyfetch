@@ -413,7 +413,7 @@ void message(char *message) {
   }
 }
 
-int get_swap_status() {
+int get_swap_status(void) {
 #ifdef __linux__
   struct sysinfo info;
   if (sysinfo(&info) != 0) {

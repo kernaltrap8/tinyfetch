@@ -669,16 +669,25 @@ void tinyram(void) {
     double ram_used_mib = ram_used / 1024.0;
     double ram_free_mib = ram_free / 1024.0;
 
-    if (total_ram_mib < 1024) {
-      printf("%.2f MiB used / %.2f MiB total (%.2f MiB free)\n", ram_used_mib,
-             total_ram_mib, ram_free_mib);
+    // print used RAM in MiB or GiB
+    if (ram_used_mib < 1024) {
+      printf("%.2f MiB used / ", ram_used_mib);
     } else {
-      // convert the values from /proc/meminfo into GiB double values
-      double total_ram_gib = total_ram / (1024.0 * 1024.0);
-      double ram_used_gib = ram_used / (1024.0 * 1024.0);
-      double ram_free_gib = ram_free / (1024.0 * 1024.0);
-      printf("%.2f GiB used / %.2f GiB total (%.2f GiB free)\n", ram_used_gib,
-             total_ram_gib, ram_free_gib);
+      printf("%.2f GiB used / ", ram_used_mib / 1024.0);
+    }
+
+    // print total RAM in MiB or GiB
+    if (total_ram_mib < 1024) {
+      printf("%.2f MiB total (", total_ram_mib);
+    } else {
+      printf("%.2f GiB total (", total_ram_mib / 1024.0);
+    }
+
+    // print free RAM in MiB or GiB
+    if (ram_free_mib < 1024) {
+      printf("%.2f MiB free)\n", ram_free_mib);
+    } else {
+      printf("%.2f GiB free)\n", ram_free_mib / 1024.0);
     }
   }
 #endif
@@ -688,19 +697,30 @@ void tinyram(void) {
   long free_ram = longlong_freebsd_sysctl("vm.stats.vm.v_free_count") *
                   sysconf(_SC_PAGESIZE);
   long long used_ram = total_ram - free_ram;
+
   double total_ram_mib = total_ram / (1024.0 * 1024.0);
   double used_ram_mib = used_ram / (1024.0 * 1024.0);
   double free_ram_mib = free_ram / (1024.0 * 1024.0);
 
-  if (total_ram_mib < 1024) {
-    printf("%.2f MiB used / %.2f MiB total (%.2f MiB free)\n", used_ram_mib,
-           total_ram_mib, free_ram_mib);
+  // print used RAM in MiB or GiB
+  if (used_ram_mib < 1024) {
+    printf("%.2f MiB used / ", used_ram_mib);
   } else {
-    double total_ram_gib = total_ram / (1024.0 * 1024.0 * 1024.0);
-    double used_ram_gib = used_ram / (1024.0 * 1024.0 * 1024.0);
-    double free_ram_gib = free_ram / (1024.0 * 1024.0 * 1024.0);
-    printf("%.2f GiB used / %.2f GiB total (%.2f GiB free)\n", used_ram_gib,
-           total_ram_gib, free_ram_gib);
+    printf("%.2f GiB used / ", used_ram_mib / 1024.0);
+  }
+
+  // print total RAM in MiB or GiB
+  if (total_ram_mib < 1024) {
+    printf("%.2f MiB total (", total_ram_mib);
+  } else {
+    printf("%.2f GiB total (", total_ram_mib / 1024.0);
+  }
+
+  // print free RAM in MiB or GiB
+  if (free_ram_mib < 1024) {
+    printf("%.2f MiB free)\n", free_ram_mib);
+  } else {
+    printf("%.2f GiB free)\n", free_ram_mib / 1024.0);
   }
 #endif
 }
@@ -763,11 +783,32 @@ void tinyswap(void) {
   int swap_free = file_parser("/proc/meminfo", "SwapFree: %d kB");
   if (total_swap != 0 && swap_free != 0) {
     int swap_used = total_swap - swap_free;
-    double swap_total_gib = total_swap / (1024.0 * 1024.0);
-    double swap_used_gib = swap_used / (1024.0 * 1024.0);
-    double swap_free_gib = swap_free / (1024.0 * 1024.0);
-    printf("%.2f GiB used / %.2f GiB total (%.2f GiB free)\n", swap_used_gib,
-           swap_total_gib, swap_free_gib);
+
+    // convert the values from /proc/meminfo into MiB double values
+    double swap_total_mib = total_swap / 1024.0;
+    double swap_used_mib = swap_used / 1024.0;
+    double swap_free_mib = swap_free / 1024.0;
+
+    // print used swap in MiB or GiB
+    if (swap_used_mib < 1024) {
+      printf("%.2f MiB used / ", swap_used_mib);
+    } else {
+      printf("%.2f GiB used / ", swap_used_mib / 1024.0);
+    }
+
+    // print total swap in MiB or GiB
+    if (swap_total_mib < 1024) {
+      printf("%.2f MiB total (", swap_total_mib);
+    } else {
+      printf("%.2f GiB total (", swap_total_mib / 1024.0);
+    }
+
+    // print free swap in MiB or GiB
+    if (swap_free_mib < 1024) {
+      printf("%.2f MiB free)\n", swap_free_mib);
+    } else {
+      printf("%.2f GiB free)\n", swap_free_mib / 1024.0);
+    }
   }
 #endif
 #ifdef __FreeBSD__
@@ -775,11 +816,30 @@ void tinyswap(void) {
   long long used_swap = -1;
   long long free_swap = -1;
   if (get_swap_stats(&total_swap, &used_swap, &free_swap) != -1) {
-    double total_swap_gib = total_swap / (1024.0 * 1024.0 * 1024.0);
-    double used_swap_gib = used_swap / (1024.0 * 1024.0 * 1024.0);
-    double free_swap_gib = free_swap / (1024.0 * 1024.0 * 1024.0);
-    printf("%.2f GiB used / %.2f GiB total (%.2f GiB free)\n", used_swap_gib,
-           total_swap_gib, free_swap_gib);
+    double total_swap_mib = total_swap / (1024.0 * 1024.0);
+    double used_swap_mib = used_swap / (1024.0 * 1024.0);
+    double free_swap_mib = free_swap / (1024.0 * 1024.0);
+
+    // print used swap in MiB or GiB
+    if (used_swap_mib < 1024) {
+      printf("%.2f MiB used / ", used_swap_mib);
+    } else {
+      printf("%.2f GiB used / ", used_swap_mib / 1024.0);
+    }
+
+    // print total swap in MiB or GiB
+    if (total_swap_mib < 1024) {
+      printf("%.2f MiB total (", total_swap_mib);
+    } else {
+      printf("%.2f GiB total (", total_swap_mib / 1024.0);
+    }
+
+    // print free swap in MiB or GiB
+    if (free_swap_mib < 1024) {
+      printf("%.2f MiB free)\n", free_swap_mib);
+    } else {
+      printf("%.2f GiB free)\n", free_swap_mib / 1024.0);
+    }
   }
 #endif
 }

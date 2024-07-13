@@ -7,7 +7,7 @@
     tinyfetch.h
 */
 
-#define VERSION "5.4"
+#define VERSION "5.6"
 #define decoration "[·]"
 #define CMDLINE_PATH "/proc/%d/cmdline"
 #define help_banner                                                            \

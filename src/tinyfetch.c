@@ -664,12 +664,22 @@ void tinyram(void) {
   if (total_ram != -1 && ram_free != -1) {
     int ram_used = total_ram - ram_free;
 
-    // convert the values from /proc/meminfo into GiB double values
-    double total_ram_gib = total_ram / (1024.0 * 1024.0);
-    double ram_used_gib = ram_used / (1024.0 * 1024.0);
-    double ram_free_gib = ram_free / (1024.0 * 1024.0);
-    printf("%.2f GiB used / %.2f GiB total (%.2f GiB free)\n", ram_used_gib,
-           total_ram_gib, ram_free_gib);
+    // convert the values from /proc/meminfo into MiB double values
+    double total_ram_mib = total_ram / 1024.0;
+    double ram_used_mib = ram_used / 1024.0;
+    double ram_free_mib = ram_free / 1024.0;
+
+    if (total_ram_mib < 1024) {
+      printf("%.2f MiB used / %.2f MiB total (%.2f MiB free)\n", ram_used_mib,
+             total_ram_mib, ram_free_mib);
+    } else {
+      // convert the values from /proc/meminfo into GiB double values
+      double total_ram_gib = total_ram / (1024.0 * 1024.0);
+      double ram_used_gib = ram_used / (1024.0 * 1024.0);
+      double ram_free_gib = ram_free / (1024.0 * 1024.0);
+      printf("%.2f GiB used / %.2f GiB total (%.2f GiB free)\n", ram_used_gib,
+             total_ram_gib, ram_free_gib);
+    }
   }
 #endif
 
@@ -678,11 +688,20 @@ void tinyram(void) {
   long free_ram = longlong_freebsd_sysctl("vm.stats.vm.v_free_count") *
                   sysconf(_SC_PAGESIZE);
   long long used_ram = total_ram - free_ram;
-  double total_ram_gib = total_ram / (1024.0 * 1024.0 * 1024.0);
-  double used_ram_gib = used_ram / (1024.0 * 1024.0 * 1024.0);
-  double free_ram_gib = free_ram / (1024.0 * 1024.0 * 1024.0);
-  printf("%.2f GiB used / %.2f GiB total (%.2f GiB free)\n", used_ram_gib,
-         total_ram_gib, free_ram_gib);
+  double total_ram_mib = total_ram / (1024.0 * 1024.0);
+  double used_ram_mib = used_ram / (1024.0 * 1024.0);
+  double free_ram_mib = free_ram / (1024.0 * 1024.0);
+
+  if (total_ram_mib < 1024) {
+    printf("%.2f MiB used / %.2f MiB total (%.2f MiB free)\n", used_ram_mib,
+           total_ram_mib, free_ram_mib);
+  } else {
+    double total_ram_gib = total_ram / (1024.0 * 1024.0 * 1024.0);
+    double used_ram_gib = used_ram / (1024.0 * 1024.0 * 1024.0);
+    double free_ram_gib = free_ram / (1024.0 * 1024.0 * 1024.0);
+    printf("%.2f GiB used / %.2f GiB total (%.2f GiB free)\n", used_ram_gib,
+           total_ram_gib, free_ram_gib);
+  }
 #endif
 }
 

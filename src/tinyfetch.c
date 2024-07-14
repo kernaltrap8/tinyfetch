@@ -163,14 +163,14 @@ char *freebsd_sysctl_str(char *ctlname) {
   return ctlreturn;
 }
 
-#define freebsd_sysctl(CTLNAME, VALUE) \
-do { \
-    size_t len = sizeof(VALUE); \
-    if (sysctlbyname(CTLNAME, &VALUE, &len, NULL, 0) == -1) { \
-        perror("sysctlbyname"); \
-        VALUE = -1; \
-    } \
-} while(0);
+#define freebsd_sysctl(CTLNAME, VALUE)                                         \
+  do {                                                                         \
+    size_t len = sizeof(VALUE);                                                \
+    if (sysctlbyname(CTLNAME, &VALUE, &len, NULL, 0) == -1) {                  \
+      perror("sysctlbyname");                                                  \
+      VALUE = -1;                                                              \
+    }                                                                          \
+  } while (0);
 #endif
 
 /*
@@ -693,8 +693,8 @@ void tinyram(void) {
   size_t used_ram_bytes = total_ram_bytes - free_ram_bytes;
 
   double total_ram_mib = total_ram_bytes / (1024.0 * 1024.0);
-  double used_ram_mib  = used_ram_bytes  / (1024.0 * 1024.0);
-  double free_ram_mib  = free_ram_bytes  / (1024.0 * 1024.0);
+  double used_ram_mib = used_ram_bytes / (1024.0 * 1024.0);
+  double free_ram_mib = free_ram_bytes / (1024.0 * 1024.0);
 
   // print used RAM in MiB or GiB
   if (used_ram_mib < 1024) {
@@ -872,7 +872,8 @@ int isValidArgument(char *arg) {
                              "--genie",
                              "--disable-ascii",
                              "--user",
-                             "--custom-ascii"};
+                             "--custom-ascii",
+                             "-g"};
   size_t numArgs = sizeof(validArgs) / sizeof(validArgs[0]);
   for (size_t i = 0; i < numArgs; ++i) {
     if (strcmp(arg, validArgs[i]) == 0) {
@@ -940,6 +941,8 @@ int main(int argc, char *argv[]) {
       rand_string();
     } else if (!strcmp(argv[1], "--user")) {
       tinyuser();
+    } else if (!strcmp(argv[1], "-g")) {
+      tinygpu();
     }
 
     if (argc == 2) {

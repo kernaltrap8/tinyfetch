@@ -8,20 +8,18 @@
 */
 
 #include <ctype.h>
+#include <fcntl.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/utsname.h>
-#include <time.h>
 #include <unistd.h>
 #ifdef __linux__
 #include <linux/kernel.h>
-#include <linux/unistd.h>
 #include <sys/sysinfo.h>
 #endif
 #ifdef __FreeBSD__
-#include <fcntl.h>
 #include <kvm.h>
 #include <sys/sysctl.h>
 #include <sys/types.h>
@@ -367,11 +365,32 @@ void tinyinit(void) {
   }
 }
 
+unsigned long generate_random_index(unsigned long *seed, int array_size) {
+  // Initialize the seed using /dev/urandom
+  int urandom = open("/dev/urandom", O_RDONLY);
+  if (urandom < 0) {
+    perror("Unable to open /dev/urandom");
+    exit(EXIT_FAILURE);
+  }
+  if (read(urandom, seed, sizeof(*seed)) < 0) {
+    perror("Unable to read from /dev/urandom");
+    close(urandom);
+    exit(EXIT_FAILURE);
+  }
+  close(urandom);
+
+  // Generate a random number using the LCG
+  *seed = (MULTIPLIER * (*seed) + INCREMENT) % MODULUS;
+
+  // Return a random index within the array size
+  return *seed % array_size;
+}
+
 void rand_string(void) {
   if (rand_enable == 1) {
-    srand(time(NULL));
     int num_strings = sizeof(strings) / sizeof(strings[0]);
-    int n = rand() % num_strings;
+    unsigned long seed;
+    unsigned long n = generate_random_index(&seed, num_strings);
     fflush(stdout);
     printf("%s %s\n", decoration, strings[n]);
   }

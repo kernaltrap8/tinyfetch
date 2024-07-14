@@ -7,7 +7,7 @@
     tinyfetch.h
 */
 
-#define VERSION "5.6"
+#define VERSION "6.0"
 #define decoration "[·]"
 #define CMDLINE_PATH "/proc/%d/cmdline"
 #define help_banner                                                            \
@@ -35,6 +35,10 @@
 int rand_enable;
 int custom_message;
 struct utsname tiny;
+
+#define MODULUS 2147483648 // 2^31
+#define MULTIPLIER 1103515245
+#define INCREMENT 12345
 
 const char *strings[] = {
     "uhhhhhh",

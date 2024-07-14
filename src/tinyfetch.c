@@ -336,16 +336,18 @@ char *get_gpu_name() {
 
       name = pci_lookup_name(pacc, namebuf, sizeof(namebuf), PCI_LOOKUP_DEVICE,
                              dev->vendor_id, dev->device_id);
-      if (!name) {
-        return NULL;
-      } else {
+      if (name) {
+        char *result = strdup(name);
         pci_cleanup(pacc);
-        return strdup(name);
+        return result;
       }
     }
   }
-  return 0;
+
+  pci_cleanup(pacc);
+  return NULL;
 }
+
 #endif
 
 /*
@@ -773,12 +775,14 @@ void tinycpu(void) {
 
 void tinygpu(void) {
 #if PCI_DETECTION == 1
-  if (get_gpu_name() != NULL) {
+  char *gpu = get_gpu_name();
+  if (gpu != NULL) {
     if (ascii_enable == 1) {
       printf("%s", tinyascii_p9);
     }
     pretext(pretext_gpu);
-    printf("%s\n", get_gpu_name());
+    printf("%s\n", gpu);
+    free(gpu);
   }
 #endif
 }

@@ -145,7 +145,7 @@ char *get_hostname(void) {
 */
 
 #ifdef __FreeBSD__
-char *freebsd_sysctl(char *ctlname) {
+char *freebsd_sysctl_str(char *ctlname) {
   char buf[1024];
   size_t buf_size = sizeof(buf);
 
@@ -163,30 +163,14 @@ char *freebsd_sysctl(char *ctlname) {
   return ctlreturn;
 }
 
-int freebsd_sysctl_int(const char *ctlname) {
-  int value;
-  size_t len = sizeof(value);
-
-  // Convert the name to a sysctl MIB and retrieve the value
-  if (sysctlbyname(ctlname, &value, &len, NULL, 0) == -1) {
-    perror("sysctlbyname");
-    return -1;
-  }
-
-  return value;
-}
-
-long long longlong_freebsd_sysctl(const char *ctlname) {
-  long long value;
-  size_t len = sizeof(value);
-
-  if (sysctlbyname(ctlname, &value, &len, NULL, 0) == -1) {
-    perror("sysctlbyname");
-    return -1;
-  }
-
-  return value;
-}
+#define freebsd_sysctl(CTLNAME, VALUE) \
+do { \
+    size_t len = sizeof(VALUE); \
+    if (sysctlbyname(CTLNAME, &VALUE, &len, NULL, 0) == -1) { \
+        perror("sysctlbyname"); \
+        VALUE = -1; \
+    } \
+} while(0);
 #endif
 
 /*
@@ -441,7 +425,8 @@ int get_cpu_count(void) {
   return sysconf(_SC_NPROCESSORS_ONLN);
 #endif
 #ifdef __FreeBSD__
-  int cpu_count = freebsd_sysctl_int("hw.ncpu");
+  int cpu_count = 0;
+  freebsd_sysctl("hw.ncpu", cpu_count);
   return cpu_count;
 #endif
 }
@@ -693,14 +678,23 @@ void tinyram(void) {
 #endif
 
 #ifdef __FreeBSD__
-  long long total_ram = longlong_freebsd_sysctl("hw.physmem");
-  long free_ram = longlong_freebsd_sysctl("vm.stats.vm.v_free_count") *
-                  sysconf(_SC_PAGESIZE);
-  long long used_ram = total_ram - free_ram;
+  size_t total_ram_bytes;
+  freebsd_sysctl("hw.physmem", total_ram_bytes);
+  size_t cached_pages;
+  freebsd_sysctl("vm.stats.vm.v_cache_count", cached_pages);
+  size_t inactive_pages;
+  freebsd_sysctl("vm.stats.vm.v_inactive_count", inactive_pages);
+  size_t free_pages;
+  freebsd_sysctl("vm.stats.vm.v_free_count", free_pages);
 
-  double total_ram_mib = total_ram / (1024.0 * 1024.0);
-  double used_ram_mib = used_ram / (1024.0 * 1024.0);
-  double free_ram_mib = free_ram / (1024.0 * 1024.0);
+  size_t accurate_free_pages = cached_pages + inactive_pages + free_pages;
+  size_t free_ram_bytes = accurate_free_pages * sysconf(_SC_PAGESIZE);
+
+  size_t used_ram_bytes = total_ram_bytes - free_ram_bytes;
+
+  double total_ram_mib = total_ram_bytes / (1024.0 * 1024.0);
+  double used_ram_mib  = used_ram_bytes  / (1024.0 * 1024.0);
+  double free_ram_mib  = free_ram_bytes  / (1024.0 * 1024.0);
 
   // print used RAM in MiB or GiB
   if (used_ram_mib < 1024) {
@@ -747,7 +741,7 @@ void tinycpu(void) {
   }
 #endif
 #ifdef __FreeBSD__
-  char *cpu = freebsd_sysctl("hw.model");
+  char *cpu = freebsd_sysctl_str("hw.model");
   trim_spaces(cpu);
   int cpu_count = get_cpu_count();
   if (cpu != NULL) {

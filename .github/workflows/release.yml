@@ -1,0 +1,73 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - '*'
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Meson and Ninja
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y meson ninja-build
+
+    - name: Extract version from source code
+      id: get_version
+      run: |
+        VERSION=$(grep '#define VERSION ' src/tinyfetch.h | awk '{print $3}' | tr -d '"')
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+    - name: Configure Git
+      run: |
+        git config --global user.name "github-actions"
+        git config --global user.email "github-actions@github.com"
+
+    - name: Create a new tag
+      run: |
+        git tag "v${{ env.VERSION }}"
+        git push origin "v${{ env.VERSION }}"
+
+    - name: Configure Meson build
+      run: |
+        meson setup builddir
+
+    - name: Build with Meson
+      run: |
+        meson compile -C builddir
+
+    - name: Create release asset
+      run: |
+        tar -czvf "builddir/tinyfetch-${{ env.VERSION }}.tar.gz" builddir/tinyfetch
+    
+    - name: Create a new release
+      id: create_release
+      uses: actions/create-release@v1
+      with:
+        tag_name: "v${{ env.VERSION }}"
+        release_name: "Release ${{ env.VERSION }}"
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload release asset
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: "builddir/tinyfetch-${{ env.VERSION }}.tar.gz"
+        asset_name: "tinyfetch-${{ env.VERSION }}.tar.gz"
+        asset_content_type: application/gzip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

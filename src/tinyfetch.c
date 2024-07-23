@@ -749,9 +749,10 @@ void tinycpu(void) {
 #ifdef __linux__
   char *cpu = file_parser_char("/proc/cpuinfo", "model name      : %[^\n]");
   char *cpu_fallback = file_parser_char("/proc/cpuinfo", "cpu      : %[^\n]");
-  double cpu_freq =
-      file_parser_double("/proc/cpuinfo", "cpu MHz		: %lf");
-  double formatted_freq = cpu_freq / 1000;
+  double cpu_freq = file_parser_double(
+      "/sys/devices/system/cpu/cpufreq/policy0/scaling_available_frequencies",
+      "%lf");
+  double formatted_freq = cpu_freq / 1000000;
   int cpu_count = get_cpu_count();
   if (cpu != NULL) {
     printf("%s (%d) @ %.2fGHz\n", cpu, cpu_count, formatted_freq);

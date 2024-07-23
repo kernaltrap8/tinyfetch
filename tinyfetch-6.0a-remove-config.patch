@@ -1,0 +1,10 @@
+--- tinyfetch.c	2024-07-16 13:58:19.256177802 -0500
++++ _tinyfetch.c	2024-07-19 20:15:50.162202099 -0500
+@@ -24,7 +24,6 @@
+ #include <sys/sysctl.h>
+ #include <sys/types.h>
+ #endif
+-#include "config.h"
+ #include "tinyascii.h"
+ #include "tinyfetch.h"
+ 

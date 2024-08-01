@@ -27,9 +27,10 @@
 #include "config.h"
 #include "tinyascii.h"
 #include "tinyfetch.h"
-
+#if defined(__linux__) || defined(__FreeBSD__)
 #if PCI_DETECTION == 1
 #include <pci/pci.h>
+#endif
 #endif
 
 /*
@@ -319,6 +320,7 @@ void format_uptime(long int uptime) {
         GPU detection
 */
 
+#if defined(__linux__) || defined(__FreeBSD__)
 #if PCI_DETECTION == 1
 char *get_gpu_name() {
   struct pci_access *pacc;
@@ -349,7 +351,7 @@ char *get_gpu_name() {
 }
 
 #endif
-
+#endif
 /*
     main printing functions
 */
@@ -773,7 +775,7 @@ void tinycpu(void) {
   }
 #endif
 }
-
+#if defined(__linux__) || defined(__FreeBSD__)
 void tinygpu(void) {
 #if PCI_DETECTION == 1
   char *gpu = get_gpu_name();
@@ -787,7 +789,7 @@ void tinygpu(void) {
   }
 #endif
 }
-
+#endif
 void tinyswap(void) {
   if (get_swap_status() != 1) {
     return;

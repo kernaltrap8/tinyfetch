@@ -145,10 +145,11 @@ long int get_uptime_freebsd(void);
 void format_uptime(long int uptime);
 
 // GPU detection
+#if defined(__linux__) || defined(__FreeBSD__)
 #if PCI_DETECTION == 1
 char *get_gpu_name(void);
 #endif
-
+#endif
 // main printing functions
 void pretext(const char *string);
 void fetchinfo(char *structname);

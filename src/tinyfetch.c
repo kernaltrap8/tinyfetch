@@ -19,7 +19,7 @@
 #include <linux/kernel.h>
 #include <sys/sysinfo.h>
 #endif
-#ifdef __FreeBSD__
+#ifdef defined(__FreeBSD__) || defined(__MacOS__)
 #include <kvm.h>
 #include <sys/sysctl.h>
 #include <sys/types.h>
@@ -142,7 +142,7 @@ char *get_hostname(void) {
     FreeBSD sysctl calling
 */
 
-#ifdef __FreeBSD__
+#ifdef defined(__FreeBSD__) || defined(__MacOS__)
 char *freebsd_sysctl_str(char *ctlname) {
   char buf[1024];
   size_t buf_size = sizeof(buf);
@@ -219,7 +219,7 @@ char *get_parent_shell(void) {
   return strdup(cmdline); // return the contents of cmdline
 }
 #endif
-#ifdef __FreeBSD__
+#ifdef defined(__FreeBSD__) || defined(__MacOS__)
 char *get_parent_shell_noproc(void) {
   char *shell_path = getenv("SHELL");
   if (shell_path == NULL) {
@@ -256,7 +256,7 @@ long int get_uptime(void) {
   return s_info.uptime; // return uptime
 }
 #endif
-#ifdef __FreeBSD__
+#ifdef defined(__FreeBSD__) || defined(__MacOS__)
 long int get_uptime_freebsd(void) {
   int mib[2];
   size_t len;
@@ -429,7 +429,7 @@ int get_swap_status(void) {
     return 0; // No swap available
   }
 #endif
-#ifdef __FreeBSD__
+#ifdef defined(__FreeBSD__) || defined(__MacOS__)
   long long total, used, free;
   if (get_swap_stats(&total, &used, &free) != 0) {
     return -1; // Error in fetching swap stats
@@ -445,14 +445,14 @@ int get_cpu_count(void) {
 #ifdef __linux__
   return sysconf(_SC_NPROCESSORS_ONLN);
 #endif
-#ifdef __FreeBSD__
+#ifdef defined(__FreeBSD__) || defined(__MacOS__)
   int cpu_count = 0;
   freebsd_sysctl("hw.ncpu", cpu_count);
   return cpu_count;
 #endif
 }
 
-#ifdef __FreeBSD__
+#ifdef defined(__FreeBSD__) || defined(__MacOS__)
 int get_swap_stats(long long *total, long long *used, long long *free) {
   (*total) = -1;
   (*used) = -1;
@@ -615,7 +615,7 @@ void tinyshell(void) {
 #ifdef __linux__
   char *shell = get_parent_shell();
 #endif
-#ifdef __FreeBSD__
+#ifdef defined(__FreeBSD__) || defined(__MacOS__)
   char *shell = get_parent_shell_noproc();
 #endif
   printf("%s\n", shell);
@@ -626,7 +626,7 @@ void tinyuptime(void) {
 #ifdef __linux__
   long int uptime = get_uptime();
 #endif
-#ifdef __FreeBSD__
+#ifdef defined(__FreeBSD__) || defined(__MacOS__)
   long int uptime = get_uptime_freebsd();
 #endif
   if (uptime == -1) {
@@ -698,7 +698,7 @@ void tinyram(void) {
   }
 #endif
 
-#ifdef __FreeBSD__
+#ifdef defined(__FreeBSD__) || defined(__MacOS__)
   size_t total_ram_bytes;
   freebsd_sysctl("hw.physmem", total_ram_bytes);
   size_t cached_pages;
@@ -762,7 +762,7 @@ void tinycpu(void) {
     free(cpu_fallback);
   }
 #endif
-#ifdef __FreeBSD__
+#ifdef defined(__FreeBSD__) || defined(__MacOS__)
   char *cpu = freebsd_sysctl_str("hw.model");
   trim_spaces(cpu);
   int cpu_count = get_cpu_count();
@@ -829,7 +829,7 @@ void tinyswap(void) {
     }
   }
 #endif
-#ifdef __FreeBSD__
+#ifdef defined(__FreeBSD__) || defined(__MacOS__)
   long long total_swap = -1;
   long long used_swap = -1;
   long long free_swap = -1;

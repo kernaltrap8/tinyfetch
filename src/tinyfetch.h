@@ -145,7 +145,7 @@ long int get_uptime_freebsd(void);
 void format_uptime(long int uptime);
 
 // GPU detection
-#if defined(__linux__) || defined(__FreeBSD__)
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__NetBSD__)
 #if PCI_DETECTION == 1
 char *get_gpu_name(void);
 #endif
@@ -159,7 +159,7 @@ void trim_spaces(char *str);
 void message(char *message);
 int get_swap_status(void);
 int get_cpu_count(void);
-#ifdef __FreeBSD__
+#if defined(__FreeBSD__) || defined(__NetBSD__)
 int get_swap_stats(long long *total, long long *used, long long *free);
 #endif
 

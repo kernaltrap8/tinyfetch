@@ -19,6 +19,11 @@
 #include <linux/kernel.h>
 #include <sys/sysinfo.h>
 #endif
+#if defined(__NetBSD__)
+#include <sys/sysctl.h>
+#include <sys/swap.h>
+#include <time.h>
+#endif
 #if defined(__FreeBSD__) || defined(__MacOS__)
 #include <kvm.h>
 #include <sys/sysctl.h>
@@ -27,7 +32,7 @@
 #include "config.h"
 #include "tinyascii.h"
 #include "tinyfetch.h"
-#if defined(__linux__) || defined(__FreeBSD__)
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__NetBSD__)
 #if PCI_DETECTION == 1
 #include <pci/pci.h>
 #endif
@@ -143,7 +148,7 @@ char *get_hostname(void) {
     FreeBSD sysctl calling
 */
 
-#if defined(__FreeBSD__) || defined(__MacOS__)
+#if defined(__FreeBSD__) || defined(__MacOS__) || defined(__NetBSD__)
 char *freebsd_sysctl_str(char *ctlname) {
   char buf[1024];
   size_t buf_size = sizeof(buf);
@@ -220,7 +225,7 @@ char *get_parent_shell(void) {
   return strdup(cmdline); // return the contents of cmdline
 }
 #endif
-#if defined(__FreeBSD__) || defined(__MacOS__)
+#if defined(__FreeBSD__) || defined(__MacOS__) || defined(__NetBSD__)
 char *get_parent_shell_noproc(void) {
   char *shell_path = getenv("SHELL");
   if (shell_path == NULL) {
@@ -257,7 +262,7 @@ long int get_uptime(void) {
   return s_info.uptime; // return uptime
 }
 #endif
-#if defined(__FreeBSD__) || defined(__MacOS__)
+#if defined(__FreeBSD__) || defined(__MacOS__) || defined(__NetBSD__)
 long int get_uptime_freebsd(void) {
   int mib[2];
   size_t len;
@@ -320,7 +325,7 @@ void format_uptime(long int uptime) {
         GPU detection
 */
 
-#if defined(__linux__) || defined(__FreeBSD__)
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__NetBSD__)
 #if PCI_DETECTION == 1
 char *get_gpu_name() {
   struct pci_access *pacc;
@@ -431,7 +436,7 @@ int get_swap_status(void) {
     return 0; // No swap available
   }
 #endif
-#if defined(__FreeBSD__) || defined(__MacOS__)
+#if defined(__FreeBSD__) || defined(__MacOS__) || defined(__NetBSD__)
   long long total, used, free;
   if (get_swap_stats(&total, &used, &free) != 0) {
     return -1; // Error in fetching swap stats
@@ -447,12 +452,38 @@ int get_cpu_count(void) {
 #ifdef __linux__
   return sysconf(_SC_NPROCESSORS_ONLN);
 #endif
-#if defined(__FreeBSD__) || defined(__MacOS__)
+#if defined(__FreeBSD__) || defined(__MacOS__) || defined(__NetBSD__)
   int cpu_count = 0;
   freebsd_sysctl("hw.ncpu", cpu_count);
   return cpu_count;
 #endif
 }
+
+#if defined(__NetBSD__)
+int get_swap_stats(long long *total, long long *used, long long *free_mem) {
+  (*total) = -1;
+  (*used) = -1;
+  (*free_mem) = -1;
+  int nswap = swapctl(SWAP_NSWAP, NULL, 0);
+  (*total) = 0;
+  (*used) = 0;
+  (*free_mem) = 0;
+  if(nswap == 0) return 0;
+  struct swapent* ent = malloc(sizeof(*ent) * nswap);
+  int devices = swapctl(SWAP_STATS, ent, nswap);
+  int i;
+  for(i = 0; i < devices; i++){
+  	(*total) += ent[i].se_nblks;
+  	(*used) += ent[i].se_inuse;
+	(*free_mem) += ent[i].se_nblks - ent[i].se_inuse;
+  }
+  (*total) *= 512;
+  (*used) *= 512;
+  (*free_mem) *= 512;
+  free(ent);
+  return 0;
+}
+#endif
 
 #if defined(__FreeBSD__) || defined(__MacOS__)
 int get_swap_stats(long long *total, long long *used, long long *free) {
@@ -479,8 +510,12 @@ int get_swap_stats(long long *total, long long *used, long long *free) {
 
 void tinyascii(void) {
   if (ascii_enable == 1) {
+#ifdef __NetBSD__
+	  char *distro_name = strdup("NetBSD");
+#else
     char *distro_name =
         file_parser_char("/etc/os-release", "PRETTY_NAME=\"%s\"");
+#endif
     if (distro_name == NULL)
       distro_name = "L"; // generic Linux ascii
     // int distro_name[] = {'k'};
@@ -581,11 +616,19 @@ void tinydist(void) {
   if (ascii_enable == 1)
     printf("%s", tinyascii_p2);
   pretext(pretext_distro);
+#ifdef __NetBSD__
+  char* distro_name = strdup("NetBSD");
+#else
   char *distro_name = file_parser_char("/etc/os-release",
                                        "NAME=%s"); // parsing and isolating the
                                                    // PRETTY_NAME and VERSON_ID
+#endif
+#ifdef __NetBSD__
+  char *distro_ver = NULL;
+#else
   char *distro_ver =
       file_parser_char("/etc/os-release", "VERSION_ID=\"%[^\"]\"%*c");
+#endif
   if (distro_name == NULL) {
     distro_name = "Generic Linux";
   }
@@ -617,7 +660,7 @@ void tinyshell(void) {
 #ifdef __linux__
   char *shell = get_parent_shell();
 #endif
-#if defined(__FreeBSD__) || defined(__MacOS__)
+#if defined(__FreeBSD__) || defined(__MacOS__) || defined(__NetBSD__)
   char *shell = get_parent_shell_noproc();
 #endif
   printf("%s\n", shell);
@@ -628,7 +671,7 @@ void tinyuptime(void) {
 #ifdef __linux__
   long int uptime = get_uptime();
 #endif
-#if defined(__FreeBSD__) || defined(__MacOS__)
+#if defined(__FreeBSD__) || defined(__MacOS__) || defined(__NetBSD__)
   long int uptime = get_uptime_freebsd();
 #endif
   if (uptime == -1) {
@@ -661,7 +704,7 @@ void tinyram(void) {
     printf("%s", tinyascii_p7);
   }
   pretext(pretext_ram);
-#ifdef __linux__
+#if defined(__linux__) || defined(__NetBSD__)
   // process memory used and total avail.
   int memavail = file_parser("/proc/meminfo", "MemAvailable: %d kB");
   int total_ram = file_parser("/proc/meminfo", "MemTotal: %d kB");
@@ -764,8 +807,13 @@ void tinycpu(void) {
     free(cpu_fallback);
   }
 #endif
-#if defined(__FreeBSD__) || defined(__MacOS__)
+#if defined(__FreeBSD__) || defined(__MacOS__) || defined(__NetBSD__)
+#ifdef __NetBSD__
+  char *cpu = freebsd_sysctl_str("machdep.cpu_brand");
+  if(cpu == NULL) cpu = freebsd_sysctl_str("hw.model");
+#else
   char *cpu = freebsd_sysctl_str("hw.model");
+#endif
   trim_spaces(cpu);
   int cpu_count = get_cpu_count();
   if (cpu != NULL) {
@@ -775,7 +823,7 @@ void tinycpu(void) {
   }
 #endif
 }
-#if defined(__linux__) || defined(__FreeBSD__)
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__NetBSD__)
 void tinygpu(void) {
 #if PCI_DETECTION == 1
   char *gpu = get_gpu_name();
@@ -831,7 +879,7 @@ void tinyswap(void) {
     }
   }
 #endif
-#if defined(__FreeBSD__) || defined(__MacOS__)
+#if defined(__FreeBSD__) || defined(__MacOS__) || defined(__NetBSD__)
   long long total_swap = -1;
   long long used_swap = -1;
   long long free_swap = -1;

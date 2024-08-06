@@ -33,4 +33,18 @@ elif uname_output == 'FreeBSD'
   link_args += ['-lkvm']
   inc_dirs = include_directories('/usr/local/include')
   executable('tinyfetch', 'src/tinyfetch.c', install : true, c_args: c_args, link_args: link_args, include_directories: inc_dirs)
+elif uname_output == 'NetBSD'
+  config_h = configuration_data()
+  pci_dep = dependency('libpci', required: false)
+  if pci_dep.found()
+    link_args += ['-L/usr/pkg/lib', '-lpci']
+    config_h.set('PCI_DETECTION', 1)
+  else
+   config_h.set('PCI_DETECTION', 0)
+  endif
+  configure_file(output: 'config.h', configuration: config_h)
+  c_args += ['-Os']
+  link_args += ['-lpciutils']
+  inc_dirs = include_directories('/usr/pkg/include')
+  executable('tinyfetch', 'src/tinyfetch.c', install : true, c_args: c_args, link_args: link_args, include_directories: inc_dirs)
 endif

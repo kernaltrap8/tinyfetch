@@ -20,8 +20,8 @@
 #include <sys/sysinfo.h>
 #endif
 #if defined(__NetBSD__)
-#include <sys/sysctl.h>
 #include <sys/swap.h>
+#include <sys/sysctl.h>
 #include <time.h>
 #endif
 #if defined(__FreeBSD__) || defined(__MacOS__)
@@ -468,14 +468,15 @@ int get_swap_stats(long long *total, long long *used, long long *free_mem) {
   (*total) = 0;
   (*used) = 0;
   (*free_mem) = 0;
-  if(nswap == 0) return 0;
-  struct swapent* ent = malloc(sizeof(*ent) * nswap);
+  if (nswap == 0)
+    return 0;
+  struct swapent *ent = malloc(sizeof(*ent) * nswap);
   int devices = swapctl(SWAP_STATS, ent, nswap);
   int i;
-  for(i = 0; i < devices; i++){
-  	(*total) += ent[i].se_nblks;
-  	(*used) += ent[i].se_inuse;
-	(*free_mem) += ent[i].se_nblks - ent[i].se_inuse;
+  for (i = 0; i < devices; i++) {
+    (*total) += ent[i].se_nblks;
+    (*used) += ent[i].se_inuse;
+    (*free_mem) += ent[i].se_nblks - ent[i].se_inuse;
   }
   (*total) *= 512;
   (*used) *= 512;
@@ -511,10 +512,18 @@ int get_swap_stats(long long *total, long long *used, long long *free) {
 void tinyascii(void) {
   if (ascii_enable == 1) {
 #ifdef __NetBSD__
-	  char *distro_name = strdup("NetBSD");
+    char *distro_name = strdup("NetBSD");
 #else
     char *distro_name =
         file_parser_char("/etc/os-release", "PRETTY_NAME=\"%s\"");
+    int len = strlen(distro_name);
+    if (distro_name[0] == '"') {
+      memmove(distro_name, distro_name + 1, len - 1);
+      len--;
+    }
+    if (len > 0 && distro_name[len - 1] == '"') {
+      distro_name[len - 1] = '\0';
+    }
 #endif
     if (distro_name == NULL)
       distro_name = "L"; // generic Linux ascii
@@ -617,11 +626,17 @@ void tinydist(void) {
     printf("%s", tinyascii_p2);
   pretext(pretext_distro);
 #ifdef __NetBSD__
-  char* distro_name = strdup("NetBSD");
+  char *distro_name = strdup("NetBSD");
 #else
-  char *distro_name = file_parser_char("/etc/os-release",
-                                       "NAME=%s"); // parsing and isolating the
-                                                   // PRETTY_NAME and VERSON_ID
+  char *distro_name = file_parser_char("/etc/os-release", "NAME=%s");
+  int len = strlen(distro_name);
+  if (distro_name[0] == '"') {
+    memmove(distro_name, distro_name + 1, len - 1);
+    len--;
+  }
+  if (len > 0 && distro_name[len - 1] == '"') {
+    distro_name[len - 1] = '\0';
+  }
 #endif
 #ifdef __NetBSD__
   char *distro_ver = NULL;
@@ -810,7 +825,8 @@ void tinycpu(void) {
 #if defined(__FreeBSD__) || defined(__MacOS__) || defined(__NetBSD__)
 #ifdef __NetBSD__
   char *cpu = freebsd_sysctl_str("machdep.cpu_brand");
-  if(cpu == NULL) cpu = freebsd_sysctl_str("hw.model");
+  if (cpu == NULL)
+    cpu = freebsd_sysctl_str("hw.model");
 #else
   char *cpu = freebsd_sysctl_str("hw.model");
 #endif

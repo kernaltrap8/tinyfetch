@@ -28,6 +28,7 @@
 #include <kvm.h>
 #include <sys/sysctl.h>
 #include <sys/types.h>
+#include <time.h>
 #endif
 #include "config.h"
 #include "tinyascii.h"

@@ -6,7 +6,7 @@
 /*
     tinyfetch.h
 */
-#define VERSION "6.5"
+#define VERSION "6.6"
 #define decoration "[·]"
 #define CMDLINE_PATH "/proc/%d/cmdline"
 #define help_banner                                                            \
@@ -26,6 +26,21 @@
 #define pretext_gpu "GPU:        "
 #define pretext_ram "RAM:        "
 #define pretext_swap "Swap:       "
+
+/*
+        typedef and enum for file_parser
+*/
+
+typedef enum { TYPE_INT, TYPE_DOUBLE, TYPE_STRING } ReturnType;
+
+typedef struct {
+  ReturnType type;
+  union {
+    int intValue;
+    double doubleValue;
+    char *stringValue;
+  } value;
+} ParserResult;
 
 /*
     environment variables
@@ -113,10 +128,8 @@ const char *strings[] = {
 */
 
 // file parsing
-int file_parser(const char *file, const char *line_to_read);
-double file_parser_double(const char *file, const char *line_to_read);
-char *file_parser_char(const char *file, const char *line_to_read);
-
+ParserResult file_parser(const char *file, const char *line_to_read,
+                         ReturnType returnType);
 // hostname handling
 char *get_hostname(void);
 

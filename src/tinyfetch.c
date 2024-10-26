@@ -43,88 +43,74 @@
     file parsing
 */
 
-int file_parser(const char *file, const char *line_to_read) {
+ParserResult file_parser(const char *file, const char *line_to_read,
+                         ReturnType returnType) {
+  ParserResult result;
   char resolved_path[PATH_MAX];
+  result.type = returnType; // Set the type in the result
+
   if (realpath(file, resolved_path) == NULL) {
-    return -1;
+    result.value.intValue = -1; // For int, set an error code
+    return result;
   }
 
   FILE *meminfo = fopen(resolved_path, "r");
   if (meminfo == NULL) {
     perror("fopen");
-    return -1;
+    if (returnType == TYPE_STRING) {
+      result.value.stringValue = NULL; // For string, set to NULL
+    } else {
+      result.value.intValue = -1;      // For int, set an error code
+      result.value.doubleValue = -1.0; // For double, set an error value
+    }
+    return result;
   }
 
   char line[256];
   while (fgets(line, sizeof(line), meminfo)) {
-    int ram;
-    if (sscanf(line, line_to_read, &ram) == 1) {
-      fclose(meminfo);
-      return ram;
+    switch (returnType) {
+    case TYPE_INT: {
+      if (sscanf(line, line_to_read, &result.value.intValue) == 1) {
+        fclose(meminfo);
+        return result;
+      }
+      break;
+    }
+    case TYPE_DOUBLE: {
+      if (sscanf(line, line_to_read, &result.value.doubleValue) == 1) {
+        fclose(meminfo);
+        return result;
+      }
+      break;
+    }
+    case TYPE_STRING: {
+      result.value.stringValue = (char *)malloc(strlen(line) + 1);
+      if (!result.value.stringValue) {
+        perror("malloc");
+        fclose(meminfo);
+        return result;
+      }
+      if (sscanf(line, line_to_read, result.value.stringValue) == 1) {
+        fclose(meminfo);
+        return result;
+      }
+      free(result.value.stringValue);
+      result.value.stringValue = NULL;
+      break;
+    }
     }
   }
 
   fclose(meminfo);
-  return -1;
-}
-
-double file_parser_double(const char *file, const char *line_to_read) {
-  char resolved_path[PATH_MAX];
-  if (realpath(file, resolved_path) == NULL) {
-    return -1.0;
+  // Return appropriate error based on type
+  if (returnType == TYPE_STRING) {
+    result.value.stringValue = NULL;
+  } else {
+    result.value.intValue = -1;
+    result.value.doubleValue = -1.0;
   }
 
-  FILE *meminfo = fopen(resolved_path, "r");
-  if (meminfo == NULL) {
-    perror("fopen");
-    return -1.0;
-  }
-
-  char line[256];
-  while (fgets(line, sizeof(line), meminfo)) {
-    double ram;
-    if (sscanf(line, line_to_read, &ram) == 1) {
-      fclose(meminfo);
-      return ram;
-    }
-  }
-
-  fclose(meminfo);
-  return -1.0;
-}
-
-char *file_parser_char(const char *file, const char *line_to_read) {
-  char resolved_path[PATH_MAX];
-  if (realpath(file, resolved_path) == NULL) {
-    return NULL;
-  }
-
-  FILE *meminfo = fopen(resolved_path, "r");
-  if (meminfo == NULL) {
-    perror("fopen");
-    return NULL;
-  }
-
-  char line[256];
-  char *parsed_string = NULL;
-  while (fgets(line, sizeof(line), meminfo)) {
-    parsed_string = (char *)malloc(strlen(line) + 1);
-    if (!parsed_string) {
-      perror("malloc");
-      fclose(meminfo);
-      return NULL;
-    }
-
-    if (sscanf(line, line_to_read, parsed_string) == 1) {
-      fclose(meminfo);
-      return parsed_string;
-    }
-
-    free(parsed_string);
-  }
-
-  fclose(meminfo);
-  return NULL;
+  return result;
 }
 
 /*
@@ -508,83 +494,164 @@ int get_swap_stats(long long *total, long long *used, long long *free) {
 #endif
 
 void tinyascii(void) {
+  char *distro_name = NULL;
+
   if (ascii_enable == 1) {
 #ifdef __NetBSD__
-    char *distro_name = strdup("NetBSD");
+    distro_name = strdup("NetBSD");
 #else
-    char *distro_name =
-        file_parser_char("/etc/os-release", "PRETTY_NAME=\"%s\"");
-    int len = strlen(distro_name);
-    if (distro_name[0] == '"') {
-      memmove(distro_name, distro_name + 1, len - 1);
-      len--;
-    }
-    if (len > 0 && distro_name[len - 1] == '"') {
-      distro_name[len - 1] = '\0';
+    ParserResult result =
+        file_parser("/etc/os-release", "PRETTY_NAME=\"%[^\"]\"", TYPE_STRING);
+
+    // Debug output to check the result
+    if (result.type == TYPE_STRING && result.value.stringValue) {
+      distro_name = strdup(result.value.stringValue);
+      free(result.value.stringValue); // Free the original if allocated
     }
 #endif
-    if (distro_name == NULL) {
-      distro_name = "L"; // generic Linux ascii
-      return;
-    }
-    // int distro_name[] = {'k'};
-    (distro_name[0] == 'A' || distro_name[0] == 'a')
-        ? (tinyascii_p1 = a_p1, tinyascii_p2 = a_p2, tinyascii_p3 = a_p3,
-           tinyascii_p4 = a_p4, tinyascii_p5 = a_p5, tinyascii_p6 = a_p6,
-           tinyascii_p7 = a_p7, tinyascii_p8 = a_p8, tinyascii_p9 = a_p9)
-        : NULL;
-    (distro_name[0] == 'B' || distro_name[0] == 'b')
-        ? (tinyascii_p1 = b_p1, tinyascii_p2 = b_p2, tinyascii_p3 = b_p3,
-           tinyascii_p4 = b_p4, tinyascii_p5 = b_p5, tinyascii_p6 = b_p6,
-           tinyascii_p7 = b_p7, tinyascii_p8 = b_p8, tinyascii_p9 = b_p9)
-        : NULL;
-    (distro_name[0] == 'C' || distro_name[0] == 'c')
-        ? (tinyascii_p1 = c_p1, tinyascii_p2 = c_p2, tinyascii_p3 = c_p3,
-           tinyascii_p4 = c_p4, tinyascii_p5 = c_p5, tinyascii_p6 = c_p6,
-           tinyascii_p7 = c_p7, tinyascii_p8 = c_p8, tinyascii_p9 = c_p9)
-        : NULL;
-    (distro_name[0] == 'D' || distro_name[0] == 'd')
-        ? (tinyascii_p1 = d_p1, tinyascii_p2 = d_p2, tinyascii_p3 = d_p3,
-           tinyascii_p4 = d_p4, tinyascii_p5 = d_p5, tinyascii_p6 = d_p6,
-           tinyascii_p7 = d_p7, tinyascii_p8 = d_p8, tinyascii_p9 = d_p9)
-        : NULL;
-    (distro_name[0] == 'E' || distro_name[0] == 'e')
-        ? (tinyascii_p1 = e_p1, tinyascii_p2 = e_p2, tinyascii_p3 = e_p3,
-           tinyascii_p4 = e_p4, tinyascii_p5 = e_p5, tinyascii_p6 = e_p6,
-           tinyascii_p7 = e_p7, tinyascii_p8 = e_p8, tinyascii_p9 = e_p9)
-        : NULL;
-    (distro_name[0] == 'F' || distro_name[0] == 'f')
-        ? (tinyascii_p1 = f_p1, tinyascii_p2 = f_p2, tinyascii_p3 = f_p3,
-           tinyascii_p4 = f_p4, tinyascii_p5 = f_p5, tinyascii_p6 = f_p6,
-           tinyascii_p7 = f_p7, tinyascii_p8 = f_p8, tinyascii_p9 = f_p9)
-        : NULL;
-    (distro_name[0] == 'G' || distro_name[0] == 'g')
-        ? (tinyascii_p1 = g_p1, tinyascii_p2 = g_p2, tinyascii_p3 = g_p3,
-           tinyascii_p4 = g_p4, tinyascii_p5 = g_p5, tinyascii_p6 = g_p6,
-           tinyascii_p7 = g_p7, tinyascii_p8 = g_p8, tinyascii_p9 = g_p9)
-        : NULL;
-    (distro_name[0] == 'H' || distro_name[0] == 'h')
-        ? (tinyascii_p1 = h_p1, tinyascii_p2 = h_p2, tinyascii_p3 = h_p3,
-           tinyascii_p4 = h_p4, tinyascii_p5 = h_p5, tinyascii_p6 = h_p6,
-           tinyascii_p7 = h_p7, tinyascii_p8 = h_p8, tinyascii_p9 = h_p9)
-        : NULL;
-    (distro_name[0] == 'I' || distro_name[0] == 'i')
-        ? (tinyascii_p1 = i_p1, tinyascii_p2 = i_p2, tinyascii_p3 = i_p3,
-           tinyascii_p4 = i_p4, tinyascii_p5 = i_p5, tinyascii_p6 = i_p6,
-           tinyascii_p7 = i_p7, tinyascii_p8 = i_p8, tinyascii_p9 = i_p9)
-        : NULL;
-    (distro_name[0] == 'J' || distro_name[0] == 'j')
-        ? (tinyascii_p1 = j_p1, tinyascii_p2 = j_p2, tinyascii_p3 = j_p3,
-           tinyascii_p4 = j_p4, tinyascii_p5 = j_p5, tinyascii_p6 = j_p6,
-           tinyascii_p7 = j_p7, tinyascii_p8 = j_p8, tinyascii_p9 = j_p9)
-        : NULL;
-    (distro_name[0] == 'K' || distro_name[0] == 'k')
-        ? (tinyascii_p1 = k_p1, tinyascii_p2 = k_p2, tinyascii_p3 = k_p3,
-           tinyascii_p4 = k_p4, tinyascii_p5 = k_p5, tinyascii_p6 = k_p6,
-           tinyascii_p7 = k_p7, tinyascii_p8 = k_p8, tinyascii_p9 = k_p9)
-        : NULL;
 
-    free(distro_name);
+    // If distro_name is still NULL, set to "Generic Linux"
+    if (!distro_name) {
+      distro_name = strdup("Generic Linux");
+    } else {
+      // Remove surrounding quotes if present
+      size_t len = strlen(distro_name);
+      if (len && *distro_name == '"') {
+        memmove(distro_name, distro_name + 1, len); // Trim leading quote
+        len--;
+      }
+      if (len && distro_name[len - 1] == '"') {
+        distro_name[len - 1] = '\0'; // Trim trailing quote
+      }
+
+      // Check if distro_name is empty and assign default if necessary
+      if (!*distro_name) {
+        free(distro_name);
+        distro_name = strdup("Generic Linux");
+      }
+    }
+
+    // Matching the first character
+    char first_char = distro_name[0];
+
+    tinyascii_p1 = (first_char == 'A' || first_char == 'a')   ? a_p1
+                   : (first_char == 'B' || first_char == 'b') ? b_p1
+                   : (first_char == 'C' || first_char == 'c') ? c_p1
+                   : (first_char == 'D' || first_char == 'd') ? d_p1
+                   : (first_char == 'E' || first_char == 'e') ? e_p1
+                   : (first_char == 'F' || first_char == 'f') ? f_p1
+                   : (first_char == 'G' || first_char == 'g') ? g_p1
+                   : (first_char == 'H' || first_char == 'h') ? h_p1
+                   : (first_char == 'I' || first_char == 'i') ? i_p1
+                   : (first_char == 'J' || first_char == 'j') ? j_p1
+                   : (first_char == 'K' || first_char == 'k') ? k_p1
+                                                              : NULL;
+
+    tinyascii_p2 = (first_char == 'A' || first_char == 'a')   ? a_p2
+                   : (first_char == 'B' || first_char == 'b') ? b_p2
+                   : (first_char == 'C' || first_char == 'c') ? c_p2
+                   : (first_char == 'D' || first_char == 'd') ? d_p2
+                   : (first_char == 'E' || first_char == 'e') ? e_p2
+                   : (first_char == 'F' || first_char == 'f') ? f_p2
+                   : (first_char == 'G' || first_char == 'g') ? g_p2
+                   : (first_char == 'H' || first_char == 'h') ? h_p2
+                   : (first_char == 'I' || first_char == 'i') ? i_p2
+                   : (first_char == 'J' || first_char == 'j') ? j_p2
+                   : (first_char == 'K' || first_char == 'k') ? k_p2
+                                                              : NULL;
+
+    tinyascii_p3 = (first_char == 'A' || first_char == 'a')   ? a_p3
+                   : (first_char == 'B' || first_char == 'b') ? b_p3
+                   : (first_char == 'C' || first_char == 'c') ? c_p3
+                   : (first_char == 'D' || first_char == 'd') ? d_p3
+                   : (first_char == 'E' || first_char == 'e') ? e_p3
+                   : (first_char == 'F' || first_char == 'f') ? f_p3
+                   : (first_char == 'G' || first_char == 'g') ? g_p3
+                   : (first_char == 'H' || first_char == 'h') ? h_p3
+                   : (first_char == 'I' || first_char == 'i') ? i_p3
+                   : (first_char == 'J' || first_char == 'j') ? j_p3
+                   : (first_char == 'K' || first_char == 'k') ? k_p3
+                                                              : NULL;
+
+    tinyascii_p4 = (first_char == 'A' || first_char == 'a')   ? a_p4
+                   : (first_char == 'B' || first_char == 'b') ? b_p4
+                   : (first_char == 'C' || first_char == 'c') ? c_p4
+                   : (first_char == 'D' || first_char == 'd') ? d_p4
+                   : (first_char == 'E' || first_char == 'e') ? e_p4
+                   : (first_char == 'F' || first_char == 'f') ? f_p4
+                   : (first_char == 'G' || first_char == 'g') ? g_p4
+                   : (first_char == 'H' || first_char == 'h') ? h_p4
+                   : (first_char == 'I' || first_char == 'i') ? i_p4
+                   : (first_char == 'J' || first_char == 'j') ? j_p4
+                   : (first_char == 'K' || first_char == 'k') ? k_p4
+                                                              : NULL;
+
+    tinyascii_p5 = (first_char == 'A' || first_char == 'a')   ? a_p5
+                   : (first_char == 'B' || first_char == 'b') ? b_p5
+                   : (first_char == 'C' || first_char == 'c') ? c_p5
+                   : (first_char == 'D' || first_char == 'd') ? d_p5
+                   : (first_char == 'E' || first_char == 'e') ? e_p5
+                   : (first_char == 'F' || first_char == 'f') ? f_p5
+                   : (first_char == 'G' || first_char == 'g') ? g_p5
+                   : (first_char == 'H' || first_char == 'h') ? h_p5
+                   : (first_char == 'I' || first_char == 'i') ? i_p5
+                   : (first_char == 'J' || first_char == 'j') ? j_p5
+                   : (first_char == 'K' || first_char == 'k') ? k_p5
+                                                              : NULL;
+
+    tinyascii_p6 = (first_char == 'A' || first_char == 'a')   ? a_p6
+                   : (first_char == 'B' || first_char == 'b') ? b_p6
+                   : (first_char == 'C' || first_char == 'c') ? c_p6
+                   : (first_char == 'D' || first_char == 'd') ? d_p6
+                   : (first_char == 'E' || first_char == 'e') ? e_p6
+                   : (first_char == 'F' || first_char == 'f') ? f_p6
+                   : (first_char == 'G' || first_char == 'g') ? g_p6
+                   : (first_char == 'H' || first_char == 'h') ? h_p6
+                   : (first_char == 'I' || first_char == 'i') ? i_p6
+                   : (first_char == 'J' || first_char == 'j') ? j_p6
+                   : (first_char == 'K' || first_char == 'k') ? k_p6
+                                                              : NULL;
+
+    tinyascii_p7 = (first_char == 'A' || first_char == 'a')   ? a_p7
+                   : (first_char == 'B' || first_char == 'b') ? b_p7
+                   : (first_char == 'C' || first_char == 'c') ? c_p7
+                   : (first_char == 'D' || first_char == 'd') ? d_p7
+                   : (first_char == 'E' || first_char == 'e') ? e_p7
+                   : (first_char == 'F' || first_char == 'f') ? f_p7
+                   : (first_char == 'G' || first_char == 'g') ? g_p7
+                   : (first_char == 'H' || first_char == 'h') ? h_p7
+                   : (first_char == 'I' || first_char == 'i') ? i_p7
+                   : (first_char == 'J' || first_char == 'j') ? j_p7
+                   : (first_char == 'K' || first_char == 'k') ? k_p7
+                                                              : NULL;
+
+    tinyascii_p8 = (first_char == 'A' || first_char == 'a')   ? a_p8
+                   : (first_char == 'B' || first_char == 'b') ? b_p8
+                   : (first_char == 'C' || first_char == 'c') ? c_p8
+                   : (first_char == 'D' || first_char == 'd') ? d_p8
+                   : (first_char == 'E' || first_char == 'e') ? e_p8
+                   : (first_char == 'F' || first_char == 'f') ? f_p8
+                   : (first_char == 'G' || first_char == 'g') ? g_p8
+                   : (first_char == 'H' || first_char == 'h') ? h_p8
+                   : (first_char == 'I' || first_char == 'i') ? i_p8
+                   : (first_char == 'J' || first_char == 'j') ? j_p8
+                   : (first_char == 'K' || first_char == 'k') ? k_p8
+                                                              : NULL;
+
+    tinyascii_p9 = (first_char == 'A' || first_char == 'a')   ? a_p9
+                   : (first_char == 'B' || first_char == 'b') ? b_p9
+                   : (first_char == 'C' || first_char == 'c') ? c_p9
+                   : (first_char == 'D' || first_char == 'd') ? d_p9
+                   : (first_char == 'E' || first_char == 'e') ? e_p9
+                   : (first_char == 'F' || first_char == 'f') ? f_p9
+                   : (first_char == 'G' || first_char == 'g') ? g_p9
+                   : (first_char == 'H' || first_char == 'h') ? h_p9
+                   : (first_char == 'I' || first_char == 'i') ? i_p9
+                   : (first_char == 'J' || first_char == 'j') ? j_p9
+                   : (first_char == 'K' || first_char == 'k') ? k_p9
+                                                              : NULL;
+
+    free(distro_name); // Free the duplicated string if allocated
   }
 }
 
@@ -622,40 +689,65 @@ void tinyos(void) {
 }
 
 void tinydist(void) {
-  if (ascii_enable == 1)
-    printf("%s", tinyascii_p2);
+  if (ascii_enable == 1) {
+    printf("%s", tinyascii_p2); // Ensure tinyascii_p2 is defined elsewhere
+  }
+
   pretext(pretext_distro);
+
 #ifdef __NetBSD__
   char *distro_name = strdup("NetBSD");
 #else
-  char *distro_name = file_parser_char("/etc/os-release", "NAME=%s");
-  int len = strlen(distro_name);
-  if (distro_name[0] == '"') {
-    memmove(distro_name, distro_name + 1, len - 1);
-    len--;
-  }
-  if (len > 0 && distro_name[len - 1] == '"') {
-    distro_name[len - 1] = '\0';
+  ParserResult distro_name_result =
+      file_parser("/etc/os-release", "NAME=\"%[^\"]\"", TYPE_STRING);
+  char *distro_name = NULL;
+
+  // Check if we successfully retrieved the NAME entry
+  if (distro_name_result.type == TYPE_STRING &&
+      distro_name_result.value.stringValue != NULL) {
+    distro_name = strdup(distro_name_result.value.stringValue);
+    free(
+        distro_name_result.value.stringValue); // Free the original if allocated
+  } else {
+    // If we couldn't get the name, we may need to fall back to PRETTY_NAME
+    distro_name_result =
+        file_parser("/etc/os-release", "PRETTY_NAME=\"%[^\"]\"", TYPE_STRING);
+    if (distro_name_result.type == TYPE_STRING &&
+        distro_name_result.value.stringValue != NULL) {
+      distro_name = strdup(distro_name_result.value.stringValue);
+      free(distro_name_result.value.stringValue);
+    }
   }
 #endif
+
 #ifdef __NetBSD__
   char *distro_ver = NULL;
 #else
-  char *distro_ver =
-      file_parser_char("/etc/os-release", "VERSION_ID=\"%[^\"]\"%*c");
+  ParserResult distro_ver_result =
+      file_parser("/etc/os-release", "VERSION_ID=\"%[^\"]\"", TYPE_STRING);
+  char *distro_ver = NULL;
+
+  if (distro_ver_result.type == TYPE_STRING &&
+      distro_ver_result.value.stringValue != NULL) {
+    distro_ver = strdup(distro_ver_result.value.stringValue);
+    free(distro_ver_result.value.stringValue); // Free the original if allocated
+  }
 #endif
+
+  // Set defaults if necessary
   if (distro_name == NULL) {
-    distro_name = "Generic Linux";
+    distro_name = strdup("Generic Linux"); // Duplicate to allocate memory
   }
   if (distro_ver == NULL) {
-    tinyinit();
-    printf("%s %s \n", distro_name, tiny.machine);
-    free(distro_name);
-    free(distro_ver);
-    return;
+    distro_ver =
+        strdup("Unknown Version"); // Allocate memory for default version
   }
+
   tinyinit();
-  printf("%s %s %s \n", distro_name, distro_ver, tiny.machine);
+  printf("%s %s %s\n", distro_name, distro_ver,
+         tiny.machine); // Ensure tiny.machine is defined
+
+  // Free allocated memory
   free(distro_name);
   free(distro_ver);
 }
@@ -713,43 +805,48 @@ void tinywm(void) {
 void tinyram(void) {
   if (ascii_enable == 1) {
     char *wm = getenv("XDG_CURRENT_DESKTOP");
-    if (wm == NULL) {
-      ;
+    if (wm != NULL) {
+      printf("%s", tinyascii_p7);
     }
-    printf("%s", tinyascii_p7);
   }
+
   pretext(pretext_ram);
+
 #if defined(__linux__) || defined(__NetBSD__)
-  // process memory used and total avail.
-  int memavail = file_parser("/proc/meminfo", "MemAvailable: %d kB");
-  int total_ram = file_parser("/proc/meminfo", "MemTotal: %d kB");
-  int ram_free = (memavail != -1)
-                     ? memavail
-                     : file_parser("/proc/meminfo", "MemFree: %d kB");
+  // Process memory used and total available
+  ParserResult memavail =
+      file_parser("/proc/meminfo", "MemAvailable: %d kB", TYPE_INT);
+  ParserResult total_ram =
+      file_parser("/proc/meminfo", "MemTotal: %d kB", TYPE_INT);
 
-  if (total_ram != -1 && ram_free != -1) {
-    int ram_used = total_ram - ram_free;
+  ParserResult ram_free =
+      (memavail.type == TYPE_INT && memavail.value.intValue != -1)
+          ? memavail
+          : file_parser("/proc/meminfo", "MemFree: %d kB", TYPE_INT);
 
-    // convert the values from /proc/meminfo into MiB double values
-    double total_ram_mib = total_ram / 1024.0;
+  if (total_ram.type == TYPE_INT && ram_free.type == TYPE_INT) {
+    int ram_used = total_ram.value.intValue - ram_free.value.intValue;
+
+    // Convert the values from /proc/meminfo into MiB double values
+    double total_ram_mib = total_ram.value.intValue / 1024.0;
     double ram_used_mib = ram_used / 1024.0;
-    double ram_free_mib = ram_free / 1024.0;
+    double ram_free_mib = ram_free.value.intValue / 1024.0;
 
-    // print used RAM in MiB or GiB
+    // Print used RAM in MiB or GiB
     if (ram_used_mib < 1024) {
       printf("%.2f MiB used / ", ram_used_mib);
     } else {
       printf("%.2f GiB used / ", ram_used_mib / 1024.0);
     }
 
-    // print total RAM in MiB or GiB
+    // Print total RAM in MiB or GiB
     if (total_ram_mib < 1024) {
       printf("%.2f MiB total (", total_ram_mib);
     } else {
       printf("%.2f GiB total (", total_ram_mib / 1024.0);
     }
 
-    // print free RAM in MiB or GiB
+    // Print free RAM in MiB or GiB
     if (ram_free_mib < 1024) {
       printf("%.2f MiB free)\n", ram_free_mib);
     } else {
@@ -759,14 +856,17 @@ void tinyram(void) {
 #endif
 
 #if defined(__FreeBSD__) || defined(__MacOS__)
-  size_t total_ram_bytes;
-  freebsd_sysctl("hw.physmem", total_ram_bytes);
-  size_t cached_pages;
-  freebsd_sysctl("vm.stats.vm.v_cache_count", cached_pages);
-  size_t inactive_pages;
-  freebsd_sysctl("vm.stats.vm.v_inactive_count", inactive_pages);
-  size_t free_pages;
-  freebsd_sysctl("vm.stats.vm.v_free_count", free_pages);
+  size_t total_ram_bytes = 0;
+  freebsd_sysctl("hw.physmem", &total_ram_bytes);
+
+  size_t cached_pages = 0;
+  freebsd_sysctl("vm.stats.vm.v_cache_count", &cached_pages);
+
+  size_t inactive_pages = 0;
+  freebsd_sysctl("vm.stats.vm.v_inactive_count", &inactive_pages);
+
+  size_t free_pages = 0;
+  freebsd_sysctl("vm.stats.vm.v_free_count", &free_pages);
 
   size_t accurate_free_pages = cached_pages + inactive_pages + free_pages;
   size_t free_ram_bytes = accurate_free_pages * sysconf(_SC_PAGESIZE);
@@ -777,21 +877,21 @@ void tinyram(void) {
   double used_ram_mib = used_ram_bytes / (1024.0 * 1024.0);
   double free_ram_mib = free_ram_bytes / (1024.0 * 1024.0);
 
-  // print used RAM in MiB or GiB
+  // Print used RAM in MiB or GiB
   if (used_ram_mib < 1024) {
     printf("%.2f MiB used / ", used_ram_mib);
   } else {
     printf("%.2f GiB used / ", used_ram_mib / 1024.0);
   }
 
-  // print total RAM in MiB or GiB
+  // Print total RAM in MiB or GiB
   if (total_ram_mib < 1024) {
     printf("%.2f MiB total (", total_ram_mib);
   } else {
     printf("%.2f GiB total (", total_ram_mib / 1024.0);
   }
 
-  // print free RAM in MiB or GiB
+  // Print free RAM in MiB or GiB
   if (free_ram_mib < 1024) {
     printf("%.2f MiB free)\n", free_ram_mib);
   } else {
@@ -802,42 +902,65 @@ void tinyram(void) {
 
 void tinycpu(void) {
   tinyinit();
+
   if (ascii_enable == 1) {
     printf("%s", tinyascii_p8);
   }
+
   pretext(pretext_processor);
+
 #ifdef __linux__
-  char *cpu = file_parser_char("/proc/cpuinfo", "model name      : %[^\n]");
-  char *cpu_fallback = file_parser_char("/proc/cpuinfo", "cpu      : %[^\n]");
-  double cpu_freq = file_parser_double(
-      "/sys/devices/system/cpu/cpufreq/policy0/cpuinfo_max_freq", "%lf");
-  double formatted_freq = cpu_freq / 1000000;
+  ParserResult cpu =
+      file_parser("/proc/cpuinfo", "model name      : %[^\n]", TYPE_STRING);
+  ParserResult cpu_fallback =
+      file_parser("/proc/cpuinfo", "cpu      : %[^\n]", TYPE_STRING);
+
+  ParserResult cpu_freq =
+      file_parser("/sys/devices/system/cpu/cpufreq/policy0/cpuinfo_max_freq",
+                  "%lf", TYPE_DOUBLE);
+
+  double formatted_freq = (cpu_freq.type == TYPE_DOUBLE)
+                              ? cpu_freq.value.doubleValue / 1000000
+                              : 0.0;
+
   int cpu_count = get_cpu_count();
-  if (cpu != NULL) {
-    printf("%s (%d) @ %.2fGHz\n", cpu, cpu_count, formatted_freq);
-    free(cpu);
-  } else if (cpu_fallback != NULL) {
-    printf("%s (%d)\n", cpu_fallback, cpu_count);
-    free(cpu_fallback);
+
+  if (cpu.type == TYPE_STRING && cpu.value.stringValue != NULL) {
+    printf("%s (%d) @ %.2fGHz\n", cpu.value.stringValue, cpu_count,
+           formatted_freq);
+    free(cpu.value.stringValue); // Free allocated string
+  } else if (cpu_fallback.type == TYPE_STRING &&
+             cpu_fallback.value.stringValue != NULL) {
+    printf("%s (%d)\n", cpu_fallback.value.stringValue, cpu_count);
+    free(cpu_fallback.value.stringValue); // Free allocated string
+  } else {
+    printf("Unknown CPU (%d)\n", cpu_count);
   }
 #endif
+
 #if defined(__FreeBSD__) || defined(__MacOS__) || defined(__NetBSD__)
+  char *cpu = NULL;
+
 #ifdef __NetBSD__
-  char *cpu = freebsd_sysctl_str("machdep.cpu_brand");
-  if (cpu == NULL)
+  cpu = freebsd_sysctl_str("machdep.cpu_brand");
+  if (cpu == NULL) {
     cpu = freebsd_sysctl_str("hw.model");
+  }
 #else
-  char *cpu = freebsd_sysctl_str("hw.model");
+  cpu = freebsd_sysctl_str("hw.model");
 #endif
-  trim_spaces(cpu);
-  int cpu_count = get_cpu_count();
+
   if (cpu != NULL) {
+    trim_spaces(cpu);
+    int cpu_count = get_cpu_count();
     printf("%s (%d)\n", cpu, cpu_count);
+    free(cpu); // Free allocated string
   } else {
-    printf("Unknown %s CPU (%d)\n", tiny.machine, cpu_count);
+    printf("Unknown %s CPU (%d)\n", tiny.machine, get_cpu_count());
   }
 #endif
 }
+
 #if defined(__linux__) || defined(__FreeBSD__) || defined(__NetBSD__)
 void tinygpu(void) {
 #if PCI_DETECTION == 1
@@ -853,71 +976,86 @@ void tinygpu(void) {
 #endif
 }
 #endif
+
 void tinyswap(void) {
   if (get_swap_status() != 1) {
     return;
   }
+
   if (ascii_enable == 1) {
     printf("%s", tinyascii_p9);
   }
+
   pretext(pretext_swap);
+
 #ifdef __linux__
-  int total_swap = file_parser("/proc/meminfo", "SwapTotal: %d kB");
-  int swap_free = file_parser("/proc/meminfo", "SwapFree: %d kB");
-  if (total_swap != 0 && swap_free != 0) {
-    int swap_used = total_swap - swap_free;
+  ParserResult total_swap =
+      file_parser("/proc/meminfo", "SwapTotal: %d kB", TYPE_INT);
+  ParserResult swap_free =
+      file_parser("/proc/meminfo", "SwapFree: %d kB", TYPE_INT);
 
-    // convert the values from /proc/meminfo into MiB double values
-    double swap_total_mib = total_swap / 1024.0;
-    double swap_used_mib = swap_used / 1024.0;
-    double swap_free_mib = swap_free / 1024.0;
+  if (total_swap.type == TYPE_INT && swap_free.type == TYPE_INT) {
+    int swap_total_kb = total_swap.value.intValue;
+    int swap_free_kb = swap_free.value.intValue;
+    int swap_used_kb = swap_total_kb - swap_free_kb;
 
-    // print used swap in MiB or GiB
+    // Convert the values into MiB double values
+    double swap_total_mib = swap_total_kb / 1024.0;
+    double swap_used_mib = swap_used_kb / 1024.0;
+    double swap_free_mib = swap_free_kb / 1024.0;
+
+    // Print used swap in MiB or GiB
     if (swap_used_mib < 1024) {
       printf("%.2f MiB used / ", swap_used_mib);
     } else {
       printf("%.2f GiB used / ", swap_used_mib / 1024.0);
     }
 
-    // print total swap in MiB or GiB
+    // Print total swap in MiB or GiB
     if (swap_total_mib < 1024) {
       printf("%.2f MiB total (", swap_total_mib);
     } else {
       printf("%.2f GiB total (", swap_total_mib / 1024.0);
     }
 
-    // print free swap in MiB or GiB
+    // Print free swap in MiB or GiB
     if (swap_free_mib < 1024) {
       printf("%.2f MiB free)\n", swap_free_mib);
     } else {
       printf("%.2f GiB free)\n", swap_free_mib / 1024.0);
     }
+
+    // Free resources if applicable (if memory was dynamically allocated)
+    // free(total_swap.value.intValue);
+    // free(swap_free.value.intValue);
   }
 #endif
+
 #if defined(__FreeBSD__) || defined(__MacOS__) || defined(__NetBSD__)
   long long total_swap = -1;
   long long used_swap = -1;
   long long free_swap = -1;
+
   if (get_swap_stats(&total_swap, &used_swap, &free_swap) != -1) {
     double total_swap_mib = total_swap / (1024.0 * 1024.0);
     double used_swap_mib = used_swap / (1024.0 * 1024.0);
     double free_swap_mib = free_swap / (1024.0 * 1024.0);
 
-    // print used swap in MiB or GiB
+    // Print used swap in MiB or GiB
     if (used_swap_mib < 1024) {
       printf("%.2f MiB used / ", used_swap_mib);
     } else {
       printf("%.2f GiB used / ", used_swap_mib / 1024.0);
     }
 
-    // print total swap in MiB or GiB
+    // Print total swap in MiB or GiB
     if (total_swap_mib < 1024) {
       printf("%.2f MiB total (", total_swap_mib);
     } else {
       printf("%.2f GiB total (", total_swap_mib / 1024.0);
     }
 
-    // print free swap in MiB or GiB
+    // Print free swap in MiB or GiB
     if (free_swap_mib < 1024) {
       printf("%.2f MiB free)\n", free_swap_mib);
     } else {

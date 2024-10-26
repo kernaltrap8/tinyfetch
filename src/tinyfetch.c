@@ -46,7 +46,6 @@
 int file_parser(const char *file, const char *line_to_read) {
   char resolved_path[PATH_MAX];
   if (realpath(file, resolved_path) == NULL) {
-    perror("realpath");
     return -1;
   }
 
@@ -72,7 +71,6 @@ int file_parser(const char *file, const char *line_to_read) {
 double file_parser_double(const char *file, const char *line_to_read) {
   char resolved_path[PATH_MAX];
   if (realpath(file, resolved_path) == NULL) {
-    perror("realpath");
     return -1.0;
   }
 
@@ -98,7 +96,6 @@ double file_parser_double(const char *file, const char *line_to_read) {
 char *file_parser_char(const char *file, const char *line_to_read) {
   char resolved_path[PATH_MAX];
   if (realpath(file, resolved_path) == NULL) {
-    perror("realpath");
     return NULL;
   }
 
@@ -526,8 +523,10 @@ void tinyascii(void) {
       distro_name[len - 1] = '\0';
     }
 #endif
-    if (distro_name == NULL)
+    if (distro_name == NULL) {
       distro_name = "L"; // generic Linux ascii
+      return;
+    }
     // int distro_name[] = {'k'};
     (distro_name[0] == 'A' || distro_name[0] == 'a')
         ? (tinyascii_p1 = a_p1, tinyascii_p2 = a_p2, tinyascii_p3 = a_p3,
@@ -811,8 +810,7 @@ void tinycpu(void) {
   char *cpu = file_parser_char("/proc/cpuinfo", "model name      : %[^\n]");
   char *cpu_fallback = file_parser_char("/proc/cpuinfo", "cpu      : %[^\n]");
   double cpu_freq = file_parser_double(
-      "/sys/devices/system/cpu/cpufreq/policy0/scaling_available_frequencies",
-      "%lf");
+      "/sys/devices/system/cpu/cpufreq/policy0/cpuinfo_max_freq", "%lf");
   double formatted_freq = cpu_freq / 1000000;
   int cpu_count = get_cpu_count();
   if (cpu != NULL) {

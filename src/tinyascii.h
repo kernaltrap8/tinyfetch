@@ -130,3 +130,23 @@ char *k_p6 = "            ";
 char *k_p7 = "            ";
 char *k_p8 = "            ";
 char *k_p9 = "            ";
+
+char *L_p1 = " _          ";
+char *L_p2 = "| |         ";
+char *L_p3 = "| |         ";
+char *L_p4 = "| |___      ";
+char *L_p5 = "|_____|     ";
+char *L_p6 = "            ";
+char *L_p7 = "            ";
+char *L_p8 = "            ";
+char *L_p9 = "            ";
+
+char *m_p1 = "            ";
+char *m_p2 = " _ __ ___   ";
+char *m_p3 = "| '_ ` _ \\  ";
+char *m_p4 = "| | | | | | ";
+char *m_p5 = "|_| |_| |_| ";
+char *m_p6 = "            ";
+char *m_p7 = "            ";
+char *m_p8 = "            ";
+char *m_p9 = "            ";

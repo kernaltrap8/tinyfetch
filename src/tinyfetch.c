@@ -278,7 +278,7 @@ void format_uptime(long int uptime) {
   minutes = uptime / 60;
   seconds = uptime % 60;
 
-  int first = 1; // To handle the comma placement correctly
+  int first = 1; // To handle comma placement correctly
 
   if (days > 0) {
     printf("%d day%s", days, days > 1 ? "s" : "");
@@ -296,7 +296,8 @@ void format_uptime(long int uptime) {
     printf("%d minute%s", minutes, minutes > 1 ? "s" : "");
     first = 0;
   }
-  if (seconds > 0) {
+  if (seconds > 0 && days == 0 &&
+      hours == 0) { // Only show seconds if under an hour
     if (!first)
       printf(", ");
     printf("%d second%s", seconds, seconds > 1 ? "s" : "");
@@ -804,10 +805,7 @@ void tinywm(void) {
 
 void tinyram(void) {
   if (ascii_enable == 1) {
-    char *wm = getenv("XDG_CURRENT_DESKTOP");
-    if (wm != NULL) {
-      printf("%s", tinyascii_p7);
-    }
+    printf("%s", tinyascii_p7);
   }
 
   pretext(pretext_ram);

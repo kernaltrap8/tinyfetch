@@ -7,6 +7,9 @@
     tinyfetch.c
 */
 
+#define _XOPEN_SOURCE 700
+#define _DEFAULT_SOURCE
+
 #include <ctype.h>
 #include <fcntl.h>
 #include <limits.h>

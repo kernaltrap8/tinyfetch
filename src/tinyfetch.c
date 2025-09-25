@@ -14,6 +14,7 @@
 #include <fcntl.h>
 #include <limits.h>
 #include <stdio.h>
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/utsname.h>
@@ -497,7 +498,7 @@ int get_swap_stats(long long *total, long long *used, long long *free) {
 }
 #endif
 
-void tinyascii(void) {
+void tinyascii(char *TinyfetchUserSpecifiedDistroChar) {
   char *distro_name = NULL;
 
   if (ascii_enable == 1) {
@@ -534,9 +535,17 @@ void tinyascii(void) {
         distro_name = strdup("Generic Linux");
       }
     }
-
+    
+    char first_char;
+    
     // Matching the first character
-    char first_char = distro_name[0];
+    if (TinyfetchUserSpecifiedDistroChar != NULL) {
+        // Use the custom distro character provided by user
+        first_char = TinyfetchUserSpecifiedDistroChar[0];
+    } else {
+        // Use the first character of the detected distro name
+        first_char = distro_name[0];
+    }
 
     tinyascii_p1 = (first_char == 'A' || first_char == 'a')   ? a_p1
                    : (first_char == 'B' || first_char == 'b') ? b_p1
@@ -700,61 +709,87 @@ void tinydist(void) {
   pretext(pretext_distro);
 
 #ifdef __NetBSD__
-  char *distro_name = strdup("NetBSD");
+  char *distro_display = strdup("NetBSD");
 #else
-  ParserResult distro_name_result =
-      file_parser("/etc/os-release", "NAME=\"%[^\"]\"", TYPE_STRING);
-  char *distro_name = NULL;
+  char *distro_display = NULL;
 
-  // Check if we successfully retrieved the NAME entry
-  if (distro_name_result.type == TYPE_STRING &&
-      distro_name_result.value.stringValue != NULL) {
-    distro_name = strdup(distro_name_result.value.stringValue);
-    free(
-        distro_name_result.value.stringValue); // Free the original if allocated
-  } else {
-    // If we couldn't get the name, we may need to fall back to PRETTY_NAME
-    distro_name_result =
-        file_parser("/etc/os-release", "PRETTY_NAME=\"%[^\"]\"", TYPE_STRING);
-    if (distro_name_result.type == TYPE_STRING &&
-        distro_name_result.value.stringValue != NULL) {
-      distro_name = strdup(distro_name_result.value.stringValue);
-      free(distro_name_result.value.stringValue);
+  // first, try PRETTY_NAME
+  ParserResult pretty_res =
+      file_parser("/etc/os-release", "PRETTY_NAME=\"%[^\"]\"", TYPE_STRING);
+  if (pretty_res.type == TYPE_STRING &&
+      pretty_res.value.stringValue != NULL) {
+    distro_display = strdup(pretty_res.value.stringValue);
+    free(pretty_res.value.stringValue);
+  }
+
+  // if PRETTY_NAME is not found, fall back to NAME + VERSION
+  if (distro_display == NULL) {
+    // NAME
+    ParserResult name_res =
+        file_parser("/etc/os-release", "NAME=\"%[^\"]\"", TYPE_STRING);
+    char *distro_name = NULL;
+    if (name_res.type == TYPE_STRING &&
+        name_res.value.stringValue != NULL) {
+      distro_name = strdup(name_res.value.stringValue);
+      free(name_res.value.stringValue);
     }
+
+    // VERSION_ID → VERSION → VERSION_CODENAME
+    char *distro_ver = NULL;
+    ParserResult ver_res;
+
+    // VERSION_ID
+    ver_res = file_parser("/etc/os-release", "VERSION_ID=\"%[^\"]\"", TYPE_STRING);
+    if (ver_res.type == TYPE_STRING && ver_res.value.stringValue != NULL) {
+      distro_ver = strdup(ver_res.value.stringValue);
+      free(ver_res.value.stringValue);
+    }
+
+    // VERSION
+    if (distro_ver == NULL) {
+      ver_res = file_parser("/etc/os-release", "VERSION=\"%[^\"]\"", TYPE_STRING);
+      if (ver_res.type == TYPE_STRING && ver_res.value.stringValue != NULL) {
+        distro_ver = strdup(ver_res.value.stringValue);
+        free(ver_res.value.stringValue);
+      }
+    }
+
+    // VERSION_CODENAME
+    if (distro_ver == NULL) {
+      ver_res = file_parser("/etc/os-release", "VERSION_CODENAME=%s", TYPE_STRING);
+      if (ver_res.type == TYPE_STRING && ver_res.value.stringValue != NULL) {
+        distro_ver = strdup(ver_res.value.stringValue);
+        free(ver_res.value.stringValue);
+      }
+    }
+
+    // Stitch name + version if either is present
+    if (distro_name && distro_ver) {
+      size_t len = strlen(distro_name) + 1 + strlen(distro_ver) + 1;
+      distro_display = malloc(len);
+      snprintf(distro_display, len, "%s %s", distro_name, distro_ver);
+    } else if (distro_name) {
+      distro_display = strdup(distro_name);
+    } else if (distro_ver) {
+      distro_display = strdup(distro_ver);
+    }
+
+    if (distro_name) free(distro_name);
+    if (distro_ver) free(distro_ver);
   }
 #endif
 
-#ifdef __NetBSD__
-  char *distro_ver = NULL;
-#else
-  ParserResult distro_ver_result =
-      file_parser("/etc/os-release", "VERSION_ID=\"%[^\"]\"", TYPE_STRING);
-  char *distro_ver = NULL;
-
-  if (distro_ver_result.type == TYPE_STRING &&
-      distro_ver_result.value.stringValue != NULL) {
-    distro_ver = strdup(distro_ver_result.value.stringValue);
-    free(distro_ver_result.value.stringValue); // Free the original if allocated
-  }
-#endif
-
-  // Set defaults if necessary
-  if (distro_name == NULL) {
-    distro_name = strdup("Generic Linux"); // Duplicate to allocate memory
-  }
-  if (distro_ver == NULL) {
-    distro_ver =
-        strdup("Unknown Version"); // Allocate memory for default version
+  // Final fallback
+  if (distro_display == NULL) {
+    distro_display = strdup("Generic Linux Unknown Version");
   }
 
   tinyinit();
-  printf("%s %s %s\n", distro_name, distro_ver,
-         tiny.machine); // Ensure tiny.machine is defined
+  printf("%s %s\n", distro_display, tiny.machine);
 
-  // Free allocated memory
-  free(distro_name);
-  free(distro_ver);
+  free(distro_display);
 }
+
 
 void tinykern(void) {
   tinyinit();
@@ -1066,8 +1101,12 @@ void tinyswap(void) {
 #endif
 }
 
-void tinyfetch(char *msg) {
-  tinyascii();
+void tinyfetch(char *msg, char *DistroArt) {
+  if (!DistroArt) {
+  	tinyascii(NULL);
+  } else if (DistroArt) {
+  	tinyascii(DistroArt);
+  }
   tinyuser();
   rand_string();
   message(msg);
@@ -1101,7 +1140,8 @@ int isValidArgument(char *arg) {
                              "--disable-ascii",
                              "--user",
                              "--custom-ascii",
-                             "-g"};
+                             "-g",
+                             "--custom-art"};
   size_t numArgs = sizeof(validArgs) / sizeof(validArgs[0]);
   for (size_t i = 0; i < numArgs; ++i) {
     if (strcmp(arg, validArgs[i]) == 0) {
@@ -1114,18 +1154,25 @@ int isValidArgument(char *arg) {
 int main(int argc, char *argv[]) {
   if (argc == 1) {
     ascii_enable = 1;
-    tinyfetch(NULL);
+    tinyfetch(NULL, NULL);
     return 0;
+  }
+
+  if (!strcmp(argv[1], "--custom-art")) {
+  	ascii_enable = 1;
+  	TinyfetchUseUserSpecifiedDistroArt = true;
+  	tinyfetch(NULL, argv[2]);
+  	return 0;
   }
 
   if (argc > 1) {
     if (!strcmp(argv[1], "--disable-ascii") && argc == 2) {
       // If only "-d" is passed, print basic system information
-      tinyfetch(NULL);
+      tinyfetch(NULL, NULL);
     } else if (!strcmp(argv[1], "--disable-ascii") && !strcmp(argv[2], "-r")) {
       // If both "-d" and "-r" are passed, enable random string printing
       rand_enable = 1;
-      tinyfetch(NULL);
+      tinyfetch(NULL, NULL);
     }
     if (!strcmp(argv[1], "-v") || !strcmp(argv[1], "--version")) {
       printf("%s v%s\n", argv[0], VERSION);
@@ -1140,12 +1187,12 @@ int main(int argc, char *argv[]) {
       }
       ascii_enable = 1;
       custom_message = 1;
-      tinyfetch(argv[2]);
+      tinyfetch(argv[2], NULL);
       return 0;
     } else if (!strcmp(argv[1], "-r") || !strcmp(argv[1], "--random")) {
       ascii_enable = 1;
       rand_enable = 1;
-      tinyfetch(NULL);
+      tinyfetch(NULL, NULL);
     } else if (!strcmp(argv[1], "-o")) {
       tinyos();
     } else if (!strcmp(argv[1], "-d")) {

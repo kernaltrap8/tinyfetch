@@ -49,6 +49,7 @@ typedef struct {
 int rand_enable;
 int custom_message;
 struct utsname tiny;
+bool TinyfetchUseUserSpecifiedDistroArt = false;
 
 #define MODULUS 2147483648 // 2^31
 #define MULTIPLIER 1103515245
@@ -177,7 +178,7 @@ int get_swap_stats(long long *total, long long *used, long long *free);
 #endif
 
 // tinyfetch printing functions
-void tinyascii(void);
+void tinyascii(char *TinyfetchUserSpecifiedDistroChar);
 void tinyuser(void);
 void tinyos(void);
 void tinydist(void);

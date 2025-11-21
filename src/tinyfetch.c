@@ -19,6 +19,7 @@
 #include <string.h>
 #include <sys/utsname.h>
 #include <unistd.h>
+#include <stdbool.h>
 #ifdef __linux__
 #include <linux/kernel.h>
 #include <sys/sysinfo.h>
@@ -122,7 +123,7 @@ ParserResult file_parser(const char *file, const char *line_to_read,
 */
 
 char *get_hostname(void) {
-  char hostname[256];
+  char hostname[HOST_NAME_MAX];
   if (gethostname(hostname, sizeof(hostname)) ==
       0) { // if the gethostname command works, return the value from it.
            // otherise return a nullptr.
@@ -671,10 +672,7 @@ void tinyascii(char *TinyfetchUserSpecifiedDistroChar) {
 void tinyuser(void) {
   tinyinit();
   // char *user = getenv("USER");
-  char *buf;
-  buf = (char *)malloc(10 * sizeof(char));
-  buf = getlogin();
-  char *user = buf;
+  char *user = getlogin();
   printf("%s@", user); // username@, username is taken from char* user
   if (user != NULL) {
     int total_length = strlen(user) + strlen(tiny.nodename) + 1;

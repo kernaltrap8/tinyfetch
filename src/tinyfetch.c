@@ -20,7 +20,13 @@
 #include <sys/utsname.h>
 #include <unistd.h>
 #include <stdbool.h>
-#ifdef __linux__
+#ifdef _WIN32
+#include <winsock2.h>
+#include <windows.h>
+#include <psapi.h>
+#include <dxgi.h>
+#endif
+#if defined(__linux__)
 #include <linux/kernel.h>
 #include <sys/sysinfo.h>
 #endif
@@ -42,6 +48,10 @@
 #if PCI_DETECTION == 1
 #include <pci/pci.h>
 #endif
+#endif
+#if defined(_WIN32) && defined(_MSC_VER)
+#pragma comment(lib, "ws2_32.lib")
+#pragma comment(lib, "dxgi.lib")
 #endif
 
 /*
@@ -426,7 +436,7 @@ int get_swap_status(void) {
     return 0; // No swap available
   }
 #endif
-#if defined(__FreeBSD__) || defined(__MacOS__) || defined(__NetBSD__)
+#if defined(_WIN32) || defined(__FreeBSD__) || defined(__MacOS__) || defined(__NetBSD__)
   long long total, used, free;
   if (get_swap_stats(&total, &used, &free) != 0) {
     return -1; // Error in fetching swap stats
@@ -439,7 +449,12 @@ int get_swap_status(void) {
 }
 
 int get_cpu_count(void) {
-#ifdef __linux__
+#ifdef _WIN32
+  SYSTEM_INFO sysinfo;
+  GetSystemInfo(&sysinfo);
+  return (int)sysinfo.dwNumberOfProcessors;
+#endif
+#if defined(__linux__)
   return sysconf(_SC_NPROCESSORS_ONLN);
 #endif
 #if defined(__FreeBSD__) || defined(__MacOS__) || defined(__NetBSD__)
@@ -449,15 +464,48 @@ int get_cpu_count(void) {
 #endif
 }
 
-#if defined(__NetBSD__)
-int get_swap_stats(long long *total, long long *used, long long *free_mem) {
+#if defined(_WIN32)
+int get_ram_stats(long long *total, long long *used, long long *free) {
   (*total) = -1;
   (*used) = -1;
-  (*free_mem) = -1;
+  (*free) = -1;
+  MEMORYSTATUSEX statex;
+  statex.dwLength = sizeof(statex);
+  if (GlobalMemoryStatusEx(&statex))
+    (*total) = (long long)statex.ullTotalPhys;
+    (*free) = (long long)statex.ullAvailPhys;
+    (*used) = (long long)((*total) - (*free));
+    return 0;
+  }
+  return -1;
+}
+
+int get_swap_stats(long long *total, long long *used, long long *free) {
+  (*total) = -1;
+  (*used) = -1;
+  (*free) = -1;
+  PERFORMANCE_INFORMATION pi;
+  memset(&pi, 0, sizeof(pi));
+  pi.cb = sizeof(pi);
+  if (GetPerformanceInfo(&pi, sizeof(pi))) {
+    (*total) = (long long)(pi.CommitLimit * pi.PageSize);
+    (*free) = (long long)((pi.CommitLimit - pi.CommitTotal) * pi.PageSize);
+    (*used) = (long long)((*total) - (*free));
+    return 0;
+  }
+  return -1;
+}
+#endif
+
+#if defined(__NetBSD__)
+int get_swap_stats(long long *total, long long *used, long long *free) {
+  (*total) = -1;
+  (*used) = -1;
+  (*free) = -1;
   int nswap = swapctl(SWAP_NSWAP, NULL, 0);
   (*total) = 0;
   (*used) = 0;
-  (*free_mem) = 0;
+  (*free) = 0;
   if (nswap == 0)
     return 0;
   struct swapent *ent = malloc(sizeof(*ent) * nswap);
@@ -466,11 +514,11 @@ int get_swap_stats(long long *total, long long *used, long long *free_mem) {
   for (i = 0; i < devices; i++) {
     (*total) += ent[i].se_nblks;
     (*used) += ent[i].se_inuse;
-    (*free_mem) += ent[i].se_nblks - ent[i].se_inuse;
+    (*free) += ent[i].se_nblks - ent[i].se_inuse;
   }
   (*total) *= 512;
   (*used) *= 512;
-  (*free_mem) *= 512;
+  (*free) *= 512;
   free(ent);
   return 0;
 }
@@ -503,7 +551,11 @@ void tinyascii(char *TinyfetchUserSpecifiedDistroChar) {
   char *distro_name = NULL;
 
   if (ascii_enable == 1) {
-#ifdef __NetBSD__
+#ifdef _WIN32
+    distro_name = strdup("Windows");
+#elif defined(__FreeBSD__)
+    distro_name = strdup("FreeBSD");
+#elif defined(__NetBSD__)
     distro_name = strdup("NetBSD");
 #else
     ParserResult result =
@@ -845,6 +897,39 @@ void tinyram(void) {
   }
 
   pretext(pretext_ram);
+
+#ifdef _WIN32
+  long long total_ram = -1;
+  long long used_ram = -1;
+  long long free_ram = -1;
+
+  if (get_ram_stats(&total_ram, &used_ram, &free_ram) != -1) {
+    double total_ram_mib = total_ram / (1024.0 * 1024.0);
+    double used_ram_mib = used_ram / (1024.0 * 1024.0);
+    double free_ram_mib = free_ram / (1024.0 * 1024.0);
+
+    // Print used RAM in MiB or GiB
+    if (ram_used_mib < 1024) {
+      printf("%.2f MiB used / ", ram_used_mib);
+    } else {
+      printf("%.2f GiB used / ", ram_used_mib / 1024.0);
+    }
+
+    // Print total RAM in MiB or GiB
+    if (total_ram_mib < 1024) {
+      printf("%.2f MiB total (", total_ram_mib);
+    } else {
+      printf("%.2f GiB total (", total_ram_mib / 1024.0);
+    }
+
+    // Print free RAM in MiB or GiB
+    if (ram_free_mib < 1024) {
+      printf("%.2f MiB free)\n", ram_free_mib);
+    } else {
+      printf("%.2f GiB free)\n", ram_free_mib / 1024.0);
+    }
+  }
+#endif
 
 #if defined(__linux__) || defined(__NetBSD__)
   // Process memory used and total available
